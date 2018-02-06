@@ -142,6 +142,13 @@ typedef struct{
 	double z;
 } bno055_vector_t;
 
+typedef struct{
+	double w;
+	double x;
+	double y;
+	double z;
+} bno055_quaternion_t;
+
 class BNO055BaseException : public std::exception{
 	protected:
 	std::string _msg;
@@ -389,7 +396,7 @@ class BNO055{
 	bno055_vector_t getVectorEuler();
 	bno055_vector_t getVectorLinearAccel();
 	bno055_vector_t getVectorGravity();
-	void getQuat(double *wxyz);
+	bno055_quaternion_t getQuaternion();
 
 	void getSensorOffsets(uint8_t* calibData);
 	void setSensorOffsets(uint8_t* calibData);
@@ -426,7 +433,7 @@ class BNO055{
 		
 		gpio_num_t _txPin;
 		gpio_num_t _rxPin;
-		
+
 		typedef enum{
 			BNO055_VECTOR_ACCELEROMETER						=	0x08, // Default: m/s²
 			BNO055_VECTOR_MAGNETOMETER						=	0x0E, // Default: uT

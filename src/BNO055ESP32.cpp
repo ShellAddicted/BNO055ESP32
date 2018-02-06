@@ -384,7 +384,7 @@ bno055_vector_t BNO055::getVectorGravity(){
     return getVector(BNO055_VECTOR_GRAVITY);
 }
 
-void BNO055::getQuat(double *wxyz){
+bno055_quaternion_t BNO055::getQuaternion(){
     uint8_t* buffer = (uint8_t*) malloc(8);
     double scale = 1<<14;
     try{
@@ -395,11 +395,13 @@ void BNO055::getQuat(double *wxyz){
         free(buffer);
         throw exc;
     }
-    wxyz[0] = ((((uint16_t)buffer[1]) << 8) | ((uint16_t)buffer[0]))/scale;
-    wxyz[1] = ((((uint16_t)buffer[3]) << 8) | ((uint16_t)buffer[2]))/scale;
-    wxyz[2] = ((((uint16_t)buffer[5]) << 8) | ((uint16_t)buffer[4]))/scale;
-    wxyz[3] = ((((uint16_t)buffer[7]) << 8) | ((uint16_t)buffer[6]))/scale;
+    bno055_quaternion_t wxyz;
+    wxyz.w = ((((uint16_t)buffer[1]) << 8) | ((uint16_t)buffer[0]))/scale;
+    wxyz.x = ((((uint16_t)buffer[3]) << 8) | ((uint16_t)buffer[2]))/scale;
+    wxyz.y = ((((uint16_t)buffer[5]) << 8) | ((uint16_t)buffer[4]))/scale;
+    wxyz.z = ((((uint16_t)buffer[7]) << 8) | ((uint16_t)buffer[6]))/scale;
     free(buffer);
+    return wxyz;
 }
 
 void BNO055::getSensorOffsets(uint8_t* calibData){
