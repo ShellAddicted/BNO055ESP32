@@ -9,7 +9,6 @@ uint8_t offsets[] = {0xED, 0xFF, 0x2E, 0x00, 0x18, 0x00, 0x5B, 0xFF,  0x2C, 0xFE
 
 extern "C" void app_main(){
     BNO055 bno(UART_NUM_1, GPIO_NUM_17, GPIO_NUM_16);
-    double euler[3];
     try{
         bno.begin();
         bno.setExtCrystalUse(true);
@@ -26,8 +25,8 @@ extern "C" void app_main(){
         try{
             uint8_t sys, gyro, accel, mag;
             bno.getCalibration(&sys,&gyro,&accel,&mag);
-            bno.getVector(BNO055_VECTOR_EULER, euler);
-            ESP_LOGI(TAG, "Euler: (%.1f;%.1f;%.1f) <--> (%d,%d,%d,%d)", (double)euler[0],(double)euler[1],(double)euler[2], (int)sys,(int)gyro,(int)accel,(int)mag);
+            bno055_vector_t v = bno.getVectorEuler();
+            ESP_LOGI(TAG, "Euler: (%.1f;%.1f;%.1f) <--> (%d,%d,%d,%d)", (double)v.x,(double)v.y,(double)v.z, (int)sys,(int)gyro,(int)accel,(int)mag);
         }
         catch (std::exception &ex){
             ESP_LOGE(TAG, "exc: %s", ex.what());

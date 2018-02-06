@@ -333,7 +333,7 @@ void BNO055::reset(){
     vTaskDelay(700 / portTICK_PERIOD_MS); // (RE)BOOT TIME (datasheet raccomands 650ms)
 }
 
-void BNO055::getVector(bno055_vector_type_t vec, double* xyz){
+bno055_vector_t BNO055::getVector(bno055_vector_type_t vec){
     setPage(0);
     uint8_t *buffer = (uint8_t*) malloc(6);
   
@@ -352,11 +352,36 @@ void BNO055::getVector(bno055_vector_type_t vec, double* xyz){
     int16_t y = ((int16_t)buffer[2]) | (((int16_t)buffer[3]) << 8);
     int16_t z = ((int16_t)buffer[4]) | (((int16_t)buffer[5]) << 8);
     free(buffer);
-
-    xyz[0] = (double)x/scale;
-    xyz[1] = (double)y/scale;
-    xyz[2] = (double)z/scale;
     
+    bno055_vector_t xyz;
+    xyz.x = (double)x/scale;
+    xyz.y = (double)y/scale;
+    xyz.z = (double)z/scale;
+    return xyz;
+}
+
+bno055_vector_t BNO055::getVectorAccelerometer(){
+    return getVector(BNO055_VECTOR_ACCELEROMETER);
+}
+
+bno055_vector_t BNO055::getVectorMagnetometer(){
+    return getVector(BNO055_VECTOR_MAGNETOMETER);
+}
+
+bno055_vector_t BNO055::getVectorGyroscope(){
+    return getVector(BNO055_VECTOR_GYROSCOPE);
+}
+
+bno055_vector_t BNO055::getVectorEuler(){
+    return getVector(BNO055_VECTOR_EULER);
+}
+
+bno055_vector_t BNO055::getVectorLinearAccel(){
+    return getVector(BNO055_VECTOR_LINEARACCEL);
+}
+
+bno055_vector_t BNO055::getVectorGravity(){
+    return getVector(BNO055_VECTOR_GRAVITY);
 }
 
 void BNO055::getQuat(double *wxyz){

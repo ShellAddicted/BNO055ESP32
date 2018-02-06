@@ -130,20 +130,17 @@ typedef enum{
 	BNO055_REMAP_SIGN_P7							= 0x05
 } bno055_axis_sign_t;
 
-typedef enum{
-	BNO055_VECTOR_ACCELEROMETER						=	0x08, // Default: m/s²
-	BNO055_VECTOR_MAGNETOMETER						=	0x0E, // Default: uT
-	BNO055_VECTOR_GYROSCOPE							=	0x14, // Default: rad/s
-	BNO055_VECTOR_EULER								=	0x1A, // Default: degrees
-	BNO055_VECTOR_LINEARACCEL						=	0x28, // Default: m/s²
-	BNO055_VECTOR_GRAVITY							=	0x2E  // Default: m/s² 
-} bno055_vector_type_t;
-
 typedef struct{
 	uint8_t mcuState;
 	uint8_t gyrState;
 	uint8_t magState;
 } bno055_self_test_result_t;
+
+typedef struct{
+	double x;
+	double y;
+	double z;
+} bno055_vector_t;
 
 class BNO055BaseException : public std::exception{
 	protected:
@@ -386,7 +383,12 @@ class BNO055{
 	
 	int8_t getTemp();
 
-	void getVector(bno055_vector_type_t vec, double* xyz);
+	bno055_vector_t getVectorAccelerometer();
+	bno055_vector_t getVectorMagnetometer();
+	bno055_vector_t getVectorGyroscope();
+	bno055_vector_t getVectorEuler();
+	bno055_vector_t getVectorLinearAccel();
+	bno055_vector_t getVectorGravity();
 	void getQuat(double *wxyz);
 
 	void getSensorOffsets(uint8_t* calibData);
@@ -424,6 +426,18 @@ class BNO055{
 		
 		gpio_num_t _txPin;
 		gpio_num_t _rxPin;
+		
+		typedef enum{
+			BNO055_VECTOR_ACCELEROMETER						=	0x08, // Default: m/s²
+			BNO055_VECTOR_MAGNETOMETER						=	0x0E, // Default: uT
+			BNO055_VECTOR_GYROSCOPE							=	0x14, // Default: rad/s
+			BNO055_VECTOR_EULER								=	0x1A, // Default: degrees
+			BNO055_VECTOR_LINEARACCEL						=	0x28, // Default: m/s²
+			BNO055_VECTOR_GRAVITY							=	0x2E  // Default: m/s² 
+		} bno055_vector_type_t;
+
+		bno055_vector_t getVector(bno055_vector_type_t vec);
+		
 		
 		const uart_config_t uart_config = {
 			.baud_rate = 115200,
