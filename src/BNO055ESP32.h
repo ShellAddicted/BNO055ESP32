@@ -401,9 +401,10 @@ class BNO055{
 	void getSensorOffsets(uint8_t* calibData);
 	void setSensorOffsets(uint8_t* calibData);
 	
-	void getSystemStatus(bno055_system_status_t *system_status);
-	void getSelfTestResult(bno055_self_test_result_t *self_test_result);
-	void getSystemError(bno055_system_error_t *system_error);
+	bno055_system_status_t getSystemStatus();
+	bno055_self_test_result_t getSelfTestResult();
+	bno055_system_error_t getSystemError();
+
 	void setPage(uint8_t page, bool forced = false);
 
 	void enableAccelSlowMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis=true, bool yAxis=true, bool zAxis=true, bool useInterruptPin=true);

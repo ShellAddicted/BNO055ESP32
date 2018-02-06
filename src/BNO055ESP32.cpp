@@ -275,25 +275,30 @@ void BNO055::setExtCrystalUse(bool state){
     vTaskDelay(650 /portTICK_PERIOD_MS);
 }
 
-void BNO055::getSystemStatus(bno055_system_status_t *system_status){
+bno055_system_status_t BNO055::getSystemStatus(){
     setPage(0);
-    read8(BNO055_REG_SYS_STATUS, (uint8_t*)system_status);
+    uint8_t tmp;
+    read8(BNO055_REG_SYS_STATUS, &tmp);
+    return (bno055_system_status_t)tmp;
 }
 
-void BNO055::getSelfTestResult(bno055_self_test_result_t *self_test_result){
+bno055_self_test_result_t BNO055::getSelfTestResult(){
     //1 = test passed <-> 0 = test failed
     setPage(0);
     uint8_t tmp;
-
+    bno055_self_test_result_t res;
     read8(BNO055_REG_ST_RESULT, &tmp);
-    self_test_result->mcuState = (tmp >> 3) & 0x01;
-    self_test_result->gyrState = (tmp >> 2) & 0x01;
-    self_test_result->magState = (tmp >> 1) & 0x01;
+    res.mcuState = (tmp >> 3) & 0x01;
+    res.gyrState = (tmp >> 2) & 0x01;
+    res.magState = (tmp >> 1) & 0x01;
+    return res;
 }
 
-void BNO055::getSystemError(bno055_system_error_t *system_error){
+bno055_system_error_t BNO055::getSystemError(){
     setPage(0);
-    read8(BNO055_REG_SYS_ERR, (uint8_t*)system_error);
+    uint8_t tmp;
+    read8(BNO055_REG_SYS_ERR, &tmp);
+    return (bno055_system_error_t)tmp;
 }
 
 void BNO055::getCalibration(uint8_t* sys, uint8_t* gyro, uint8_t* accel, uint8_t* mag){
