@@ -26,7 +26,7 @@ extern "C" void app_main(){
             uint8_t sys, gyro, accel, mag;
             bno.getCalibration(&sys,&gyro,&accel,&mag);
             bno055_quaternion_t v = bno.getQuaternion();
-            ESP_LOGI(TAG, "Euler: (%.1f;%.1f;%.1f;%.1f) <--> (%d,%d,%d,%d)", (double)v.w, (double)v.x, (double)v.y, (double)v.z, (int)sys, (int)gyro, (int)accel, (int)mag);
+            ESP_LOGI(TAG, "Quaternion: (%.1f;%.1f;%.1f;%.1f) <--> (%d,%d,%d,%d)", (double)v.w, (double)v.x, (double)v.y, (double)v.z, (int)sys, (int)gyro, (int)accel, (int)mag);
         }
         catch (std::exception &ex){
             ESP_LOGE(TAG, "exc: %s", ex.what());
