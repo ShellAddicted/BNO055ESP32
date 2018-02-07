@@ -149,6 +149,23 @@ typedef struct{
 	double z;
 } bno055_quaternion_t;
 
+typedef struct{
+	int16_t accelOffsetX;
+    int16_t accelOffsetY;
+    int16_t accelOffsetZ;
+    
+	int16_t magOffsetX;
+    int16_t magOffsetY;
+    int16_t magOffsetZ;
+
+    int16_t gyroOffsetX;
+    int16_t gyroOffsetY;
+    int16_t gyroOffsetZ;
+
+    int16_t accelRadius;
+    int16_t magRadius;
+} bno055_offsets_t;
+
 class BNO055BaseException : public std::exception{
 	protected:
 	std::string _msg;
@@ -398,8 +415,8 @@ class BNO055{
 	bno055_vector_t getVectorGravity();
 	bno055_quaternion_t getQuaternion();
 
-	void getSensorOffsets(uint8_t* calibData);
-	void setSensorOffsets(uint8_t* calibData);
+	bno055_offsets_t getSensorOffsets();
+	void setSensorOffsets(bno055_offsets_t newOffsets);
 	
 	bno055_system_status_t getSystemStatus();
 	bno055_self_test_result_t getSelfTestResult();

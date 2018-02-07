@@ -409,18 +409,87 @@ bno055_quaternion_t BNO055::getQuaternion(){
     return wxyz;
 }
 
-void BNO055::getSensorOffsets(uint8_t* calibData){
+bno055_offsets_t BNO055::getSensorOffsets(){
     if (_mode != BNO055_OPERATION_MODE_CONFIG){
         throw BNO055WrongOprMode("getSensorOffsets requires BNO055_OPERATION_MODE_CONFIG");
     }
-    readLen(BNO055_REG_ACC_OFFSET_X_LSB, 22, calibData);
+    setPage(0);
+    /* Accel offset range depends on the G-range:
+        +/-2g  = +/- 2000 mg
+        +/-4g  = +/- 4000 mg
+        +/-8g  = +/- 8000 mg
+        +/-1g = +/- 16000 mg
+    */
+    uint8_t* buffer = (uint8_t*) malloc(22);
+    readLen(BNO055_REG_ACC_OFFSET_X_LSB, 22, buffer);
+    bno055_offsets_t sensorOffsets;
+    sensorOffsets.accelOffsetX = (buffer[0]) | (buffer[1] << 8);
+    sensorOffsets.accelOffsetY = (buffer[2]) | (buffer[3] << 8);
+    sensorOffsets.accelOffsetZ = (buffer[4]) | (buffer[5] << 8);
+
+    /* Magnetometer offset range = +/- 6400 LSB where 1uT = 16 LSB */
+    sensorOffsets.magOffsetX = (buffer[6]) | (buffer[7] << 8);
+    sensorOffsets.magOffsetY = (buffer[8]) | (buffer[9] << 8);
+    sensorOffsets.magOffsetZ = (buffer[10]) | (buffer[11] << 8);
+
+    /* Gyro offset range depends on the DPS range:
+        2000 dps = +/- 32000 LSB
+        1000 dps = +/- 16000 LSB
+        500 dps = +/- 8000 LSB
+        250 dps = +/- 4000 LSB
+        125 dps = +/- 2000 LSB
+        ... where 1 DPS = 16 LSB
+    */
+    sensorOffsets.gyroOffsetX = (buffer[12]) | (buffer[13] << 8);
+    sensorOffsets.gyroOffsetY = (buffer[14]) | (buffer[15] << 8);
+    sensorOffsets.gyroOffsetZ = (buffer[16]) | (buffer[17] << 8);
+
+    /* Accelerometer radius = +/- 1000 LSB */
+    sensorOffsets.accelRadius = (buffer[18]) | (buffer[19] << 8);
+
+    /* Magnetometer radius = +/- 960 LSB */
+    sensorOffsets.magRadius = (buffer[20]) | (buffer[21] << 8);
+
+    return sensorOffsets;
 }
 
-void BNO055::setSensorOffsets(uint8_t* calibData){
+void BNO055::setSensorOffsets(bno055_offsets_t newOffsets){
     if (_mode != BNO055_OPERATION_MODE_CONFIG){
         throw BNO055WrongOprMode("setSensorOffsets requires BNO055_OPERATION_MODE_CONFIG");
     }
-    writeLen(BNO055_REG_ACC_OFFSET_X_LSB, calibData, 22);
+    setPage(0);
+    write8(BNO055_REG_ACC_OFFSET_X_LSB, (newOffsets.accelOffsetX & 0xFF));
+    write8(BNO055_REG_ACC_OFFSET_X_MSB, ((newOffsets.accelOffsetX >> 8) & 0xFF));
+
+    write8(BNO055_REG_ACC_OFFSET_Y_LSB, (newOffsets.accelOffsetY & 0xFF));
+    write8(BNO055_REG_ACC_OFFSET_Y_MSB, ((newOffsets.accelOffsetY >> 8) & 0xFF));
+
+    write8(BNO055_REG_ACC_OFFSET_Z_LSB, (newOffsets.accelOffsetZ & 0xFF));
+    write8(BNO055_REG_ACC_OFFSET_Z_MSB, ((newOffsets.accelOffsetZ >> 8) & 0xFF));
+
+    write8(BNO055_REG_MAG_OFFSET_X_LSB, (newOffsets.magOffsetX & 0xFF));
+    write8(BNO055_REG_MAG_OFFSET_X_MSB, ((newOffsets.magOffsetX >> 8) & 0xFF));
+
+    write8(BNO055_REG_MAG_OFFSET_Y_LSB, (newOffsets.magOffsetY & 0xFF));
+    write8(BNO055_REG_MAG_OFFSET_Y_MSB, ((newOffsets.magOffsetY >> 8) & 0xFF));
+
+    write8(BNO055_REG_MAG_OFFSET_Z_LSB, (newOffsets.magOffsetZ & 0xFF));
+    write8(BNO055_REG_MAG_OFFSET_Z_MSB, ((newOffsets.magOffsetZ >> 8) & 0xFF));
+
+    write8(BNO055_REG_GYR_OFFSET_X_LSB, (newOffsets.gyroOffsetX & 0xFF));
+    write8(BNO055_REG_GYR_OFFSET_X_MSB, ((newOffsets.gyroOffsetX >> 8) & 0xFF));
+
+    write8(BNO055_REG_GYR_OFFSET_Y_LSB, (newOffsets.gyroOffsetY & 0xFF));
+    write8(BNO055_REG_GYR_OFFSET_Y_MSB, ((newOffsets.gyroOffsetY >> 8) & 0xFF));
+
+    write8(BNO055_REG_GYR_OFFSET_Z_LSB, (newOffsets.gyroOffsetZ & 0xFF));
+    write8(BNO055_REG_GYR_OFFSET_Z_MSB, ((newOffsets.gyroOffsetZ >> 8) & 0xFF));
+
+    write8(BNO055_REG_ACC_RADIUS_LSB, (newOffsets.accelRadius & 0xFF));
+    write8(BNO055_REG_ACC_RADIUS_MSB, ((newOffsets.accelRadius >>8) & 0xFF));
+
+    write8(BNO055_REG_MAG_RADIUS_LSB, (newOffsets.magRadius & 0xFF));
+    write8(BNO055_REG_MAG_RADIUS_MSB, ((newOffsets.magRadius >> 8) & 0xFF));
 }
 
 void BNO055::enableAccelSlowMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis, bool yAxis, bool zAxis, bool useInterruptPin){
