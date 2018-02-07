@@ -301,14 +301,16 @@ bno055_system_error_t BNO055::getSystemError(){
     return (bno055_system_error_t)tmp;
 }
 
-void BNO055::getCalibration(uint8_t* sys, uint8_t* gyro, uint8_t* accel, uint8_t* mag){
+bno055_calibration_t BNO055::getCalibration(){
     setPage(0);
+    bno055_calibration_t cal;
     uint8_t calData = 0;
     read8(BNO055_REG_CALIB_STAT, &calData);
-    *sys = (calData >> 6) & 0x03;
-    *gyro = (calData >> 4) & 0x03;
-    *accel = (calData >> 2) & 0x03;
-    *mag = calData & 0x03;
+    cal.sys = (calData >> 6) & 0x03;
+    cal.gyro = (calData >> 4) & 0x03;
+    cal.accel = (calData >> 2) & 0x03;
+    cal.mag = calData & 0x03;
+    return cal;
 }
 
 int8_t BNO055::getTemp(){

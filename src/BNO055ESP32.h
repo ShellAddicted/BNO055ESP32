@@ -166,6 +166,13 @@ typedef struct{
     int16_t magRadius;
 } bno055_offsets_t;
 
+typedef struct{
+	uint8_t sys;
+    uint8_t gyro;
+    uint8_t mag;
+	uint8_t accel;
+} bno055_calibration_t;
+
 class BNO055BaseException : public std::exception{
 	protected:
 	std::string _msg;
@@ -403,7 +410,7 @@ class BNO055{
 	void setPwrMode(bno055_powermode_t pwrMode);
 
 	void setExtCrystalUse(bool state);
-	void getCalibration(uint8_t* sys, uint8_t* gyro, uint8_t* accel, uint8_t* mag);
+	bno055_calibration_t getCalibration();
 	
 	int8_t getTemp();
 
