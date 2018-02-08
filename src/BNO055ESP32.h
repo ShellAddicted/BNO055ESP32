@@ -451,6 +451,9 @@ class BNO055{
 
 	void setPage(uint8_t page, bool forced = false);
 
+	void setAxisRemap(bno055_axis_config_t config = BNO055_REMAP_CONFIG_P1, bno055_axis_sign_t sign = BNO055_REMAP_SIGN_P1);
+	void setUnits(bno055_accel_unit_t accel = BNO055_UNIT_ACCEL_MS2, bno055_angular_rate_unit_t angularRate = BNO055_UNIT_ANGULAR_RATE_RPS, bno055_euler_unit_t euler = BNO055_UNIT_EULER_DEGREES, bno055_temperature_unit_t temp = BNO055_UNIT_TEMP_C, bno055_data_output_format_t format = BNO055_DATA_FORMAT_ANDROID);
+
 	void enableAccelSlowMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis=true, bool yAxis=true, bool zAxis=true, bool useInterruptPin=true);
 	void enableAccelNoMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis=true, bool yAxis=true, bool zAxis=true, bool useInterruptPin=true);
 	void enableAccelAnyMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis=true, bool yAxis=true, bool zAxis=true, bool useInterruptPin=true);
@@ -464,10 +467,6 @@ class BNO055{
 
 	void writeLen(bno055_reg_t reg, uint8_t *data, uint8_t len, uint32_t timoutMS = DEFAULT_UART_TIMEOUT_MS);
 	void write8(bno055_reg_t reg, uint8_t val, uint32_t timoutMS = DEFAULT_UART_TIMEOUT_MS);
-
-	void setAxisRemap(bno055_axis_config_t config, bno055_axis_sign_t sign);
-	void setUnits(bno055_accel_unit_t accel, bno055_angular_rate_unit_t angularRate, bno055_euler_unit_t euler, bno055_temperature_unit_t temp, bno055_data_output_format_t format);
-
 
 	protected:
 		uint8_t UART_ROUND_NUM = 64;
