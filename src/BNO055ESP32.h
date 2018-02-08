@@ -149,6 +149,31 @@ typedef struct{
 	double z;
 } bno055_quaternion_t;
 
+typedef enum{
+	BNO055_UNIT_ACCEL_MS2							= 0x00, //m/s²
+	BNO055_UNIT_ACCEL_MG							= 0X01
+} bno055_accel_unit_t;
+
+typedef enum{
+	BNO055_UNIT_ANGULAR_RATE_DPS					= 0x00,
+	BNO055_UNIT_ANGULAR_RATE_RPS					= 0x02
+} bno055_angular_rate_unit_t;
+
+typedef enum{
+	BNO055_UNIT_EULER_DEGREES						= 0x00,
+	BNO055_UNIT_EULER_RADIANS						= 0x04
+} bno055_euler_unit_t;
+
+typedef enum{
+	BNO055_UNIT_TEMP_C								= 0x00,
+	BNO055_UNIT_TEMP_F								= 0x10
+} bno055_temperature_unit_t;
+
+typedef enum{
+	BNO055_DATA_FORMAT_WINDOWS						= 0x00,
+	BNO055_DATA_FORMAT_ANDROID						= 0x80
+} bno055_data_output_format_t;
+
 typedef struct{
 	int16_t accelOffsetX;
     int16_t accelOffsetY;
@@ -446,6 +471,7 @@ class BNO055{
 	void write8(bno055_reg_t reg, uint8_t val, uint32_t timoutMS = DEFAULT_UART_TIMEOUT_MS);
 
 	void setAxisRemap(bno055_axis_config_t config, bno055_axis_sign_t sign);
+	void setUnits(bno055_accel_unit_t accel, bno055_angular_rate_unit_t angularRate, bno055_euler_unit_t euler, bno055_temperature_unit_t temp, bno055_data_output_format_t format);
 
 
 	protected:
@@ -460,6 +486,12 @@ class BNO055{
 		
 		gpio_num_t _txPin;
 		gpio_num_t _rxPin;
+
+		uint16_t accelScale = 100;
+		uint16_t tempScale = 1;
+		uint16_t angularRateScale = 16;
+		uint16_t eulerScale = 16;
+		uint16_t magScale = 16;
 
 		typedef enum{
 			BNO055_VECTOR_ACCELEROMETER						=	0x08, // Default: m/s²

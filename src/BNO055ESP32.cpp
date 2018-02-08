@@ -315,8 +315,9 @@ bno055_calibration_t BNO055::getCalibration(){
 
 int8_t BNO055::getTemp(){
     setPage(0);
-    uint8_t t = 0;
+    uint8_t t;
     read8(BNO055_REG_TEMP, &t);
+    t*=tempScale;
     return t;
 }
 
@@ -353,7 +354,23 @@ bno055_vector_t BNO055::getVector(bno055_vector_type_t vec){
         throw exc;
     }
 
-    double scale = (vec == BNO055_VECTOR_MAGNETOMETER || vec == BNO055_VECTOR_GYROSCOPE || vec == BNO055_VECTOR_EULER) ? 16 : 100;
+    double scale = 1;
+
+    if (vec == BNO055_VECTOR_MAGNETOMETER){
+        scale = magScale;
+    }
+
+    else if (vec == BNO055_VECTOR_ACCELEROMETER || vec == BNO055_VECTOR_LINEARACCEL || vec == BNO055_VECTOR_GRAVITY){
+        scale = accelScale;
+    }
+
+    else if (vec == BNO055_VECTOR_GYROSCOPE){
+        scale = angularRateScale;
+    }
+
+    else if (vec == BNO055_VECTOR_EULER){
+        scale = eulerScale;
+    }
     
     int16_t x = ((int16_t)buffer[0]) | (((int16_t)buffer[1]) << 8);
     int16_t y = ((int16_t)buffer[2]) | (((int16_t)buffer[3]) << 8);
@@ -707,6 +724,28 @@ void BNO055::setAxisRemap(bno055_axis_config_t config, bno055_axis_sign_t sign){
     write8(BNO055_REG_AXIS_MAP_SIGN, ((uint8_t)sign & 0x07));
 }
 
+void BNO055::setUnits(bno055_accel_unit_t accel, bno055_angular_rate_unit_t angularRate, bno055_euler_unit_t euler, bno055_temperature_unit_t temp, bno055_data_output_format_t format){
+    if (_mode != BNO055_OPERATION_MODE_CONFIG){
+        throw BNO055WrongOprMode("setAxisRemap requires BNO055_OPERATION_MODE_CONFIG");
+    }
+    setPage(0);
+    uint8_t tmp = 0;
+    
+    tmp |= accel;
+    accelScale = (accel != 0) ? 1 : 100;
+    
+    tmp |= angularRate;
+    angularRateScale = (angularRate != 0) ? 900 : 16;
+
+    tmp |= euler;
+    eulerScale = (euler != 0) ? 900 : 16;
+
+    tmp |= temp;
+    tempScale = (temp != 0) ? 2 : 1;
+
+    tmp |= format;
+    write8(BNO055_REG_UNIT_SEL, tmp);
+}
 void BNO055::begin(){
     // Setup UART
     esp_err_t esperr = uart_driver_delete(_uartPort);
