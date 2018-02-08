@@ -759,6 +759,17 @@ void BNO055::setAccelConfig(bno055_accel_range_t range, bno055_accel_bandwidth_t
     write8(BNO055_REG_ACC_CONFIG, tmp);
 }
 
+void BNO055::setGyroConfig(bno055_gyro_range_t range, bno055_gyro_bandwidth_t bandwidth, bno055_gyro_mode_t mode){
+    setPage(1);
+    uint8_t tmp = 0;
+    tmp |= range;
+    tmp |= bandwidth;
+    write8(BNO055_REG_GYR_CONFIG_0, tmp);
+    tmp = 0;
+    tmp |= mode;
+    write8(BNO055_REG_GYR_CONFIG_1, tmp);
+}
+
 void BNO055::begin(){
     // Setup UART
     esp_err_t esperr = uart_driver_delete(_uartPort);
