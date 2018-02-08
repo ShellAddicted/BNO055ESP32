@@ -445,6 +445,8 @@ class BNO055{
 	void writeLen(bno055_reg_t reg, uint8_t *data, uint8_t len, uint32_t timoutMS = DEFAULT_UART_TIMEOUT_MS);
 	void write8(bno055_reg_t reg, uint8_t val, uint32_t timoutMS = DEFAULT_UART_TIMEOUT_MS);
 
+	void setAxisRemap(bno055_axis_config_t config, bno055_axis_sign_t sign);
+
 
 	protected:
 		uint8_t UART_ROUND_NUM = 64;

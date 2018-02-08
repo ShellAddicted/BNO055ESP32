@@ -45,6 +45,7 @@ extern "C" void app_main(){
 		bno.begin(); //BNO055 is in CONFIG_MODE until it is changed
 		bno.setExtCrystalUse(true);
 		//bno.setSensorOffsets(storedOffsets);
+		//bno.setAxisRemap(BNO055_REMAP_CONFIG_P1, BNO055_REMAP_SIGN_P1); // see datasheet, section 3.4
 		bno.setOpMode(BNO055_OPERATION_MODE_NDOF);
 		ESP_LOGI(TAG, "Setup Done.");
 	}

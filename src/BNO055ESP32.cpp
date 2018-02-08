@@ -698,12 +698,21 @@ void BNO055::enableGyroHRInterrupt(uint8_t thresholdX, uint8_t durationX, uint8_
     }
 }
 
+void BNO055::setAxisRemap(bno055_axis_config_t config, bno055_axis_sign_t sign){
+    if (_mode != BNO055_OPERATION_MODE_CONFIG){
+        throw BNO055WrongOprMode("setAxisRemap requires BNO055_OPERATION_MODE_CONFIG");
+    }
+    setPage(0);
+    write8(BNO055_REG_AXIS_MAP_CONFIG, ((uint8_t)config & 0x1F));
+    write8(BNO055_REG_AXIS_MAP_SIGN, ((uint8_t)sign & 0x07));
+}
+
 void BNO055::begin(){
     // Setup UART
     esp_err_t esperr = uart_driver_delete(_uartPort);
     uart_param_config(_uartPort, &uart_config);
     uart_set_pin(_uartPort, _txPin, _rxPin, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-    esperr = uart_driver_install(_uartPort, 128 * 2, 0, 0, NULL, 0); // was 512
+    esperr = uart_driver_install(_uartPort, 128 * 2, 0, 0, NULL, 0);
     if (esperr != ESP_OK){
         throw BNO055UartInitFailed();
     }
