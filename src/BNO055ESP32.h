@@ -193,13 +193,21 @@ typedef enum{
 } bno055_accel_bandwidth_t;
 
 typedef enum{
-	BNO055_CONF_ACCEL_OPR_MODE_NORMAL				= 0x00,
-	BNO055_CONF_ACCEL_OPR_MODE_SUSPEND				= 0x20,
-	BNO055_CONF_ACCEL_OPR_MODE_LOW_POWER1			= 0x40,
-	BNO055_CONF_ACCEL_OPR_MODE_STANDBY				= 0x60,
-	BNO055_CONF_ACCEL_OPR_MODE_LOW_POWER2			= 0x80,
-	BNO055_CONF_ACCEL_OPR_MODE_DEEP_SUSPEND			= 0xA0
-} bno055_accel_opr_mode_t;
+	BNO055_CONF_ACCEL_MODE_NORMAL					= 0x00,
+	BNO055_CONF_ACCEL_MODE_SUSPEND					= 0x20,
+	BNO055_CONF_ACCEL_MODE_LOW_POWER1				= 0x40,
+	BNO055_CONF_ACCEL_MODE_STANDBY					= 0x60,
+	BNO055_CONF_ACCEL_MODE_LOW_POWER2				= 0x80,
+	BNO055_CONF_ACCEL_MODE_DEEP_SUSPEND				= 0xA0
+} bno055_accel_mode_t;
+
+typedef enum{
+	BNO055_CONF_GYRO_RANGE_2000DPS					= 0x00,
+	BNO055_CONF_GYRO_RANGE_1000DPS					= 0x01,
+	BNO055_CONF_GYRO_RANGE_500DPS					= 0x02,
+	BNO055_CONF_GYRO_RANGE_250DPS					= 0x03,
+	BNO055_CONF_GYRO_RANGE_125DPS					= 0x04
+} bno055_gyro_range_t;
 
 typedef enum{
 	BNO055_CONF_GYRO_BANDWIDTH_523HZ				= 0x00,
@@ -213,20 +221,37 @@ typedef enum{
 } bno055_gyro_bandwidth_t;
 
 typedef enum{
-	BNO055_CONF_GYRO_RANGE_2000DPS					= 0x00,
-	BNO055_CONF_GYRO_RANGE_1000DPS					= 0x01,
-	BNO055_CONF_GYRO_RANGE_500DPS					= 0x02,
-	BNO055_CONF_GYRO_RANGE_250DPS					= 0x03,
-	BNO055_CONF_GYRO_RANGE_125DPS					= 0x04
-} bno055_gyro_range_t;
-
-typedef enum{
 	BNO055_CONF_GYRO_MODE_NORMAL					= 0x00,
 	BNO055_CONF_GYRO_MODE_FAST_PWR_UP				= 0x01,
 	BNO055_CONF_GYRO_MODE_DEEP_SUSPEND				= 0x02,
 	BNO055_CONF_GYRO_MODE_SUSPEND					= 0x03,
 	BNO055_CONF_GYRO_MODE_ADVANCED_PWR_SAVE			= 0x04
 } bno055_gyro_mode_t;
+
+typedef enum{
+	BNO055_CONF_MAG_RATE_2HZ						= 0x00,
+	BNO055_CONF_MAG_RATE_6HZ						= 0x01,
+	BNO055_CONF_MAG_RATE_8HZ						= 0x02,
+	BNO055_CONF_MAG_RATE_10HZ						= 0x03,
+	BNO055_CONF_MAG_RATE_15HZ						= 0x04,
+	BNO055_CONF_MAG_RATE_20HZ						= 0x05,
+	BNO055_CONF_MAG_RATE_25HZ						= 0x06,
+	BNO055_CONF_MAG_RATE_30HZ						= 0x07
+} bno055_mag_rate_t;
+
+typedef enum{
+	BNO055_CONF_MAG_MODE_LOW_PWR					= 0x00,
+	BNO055_CONF_MAG_MODE_REGULAR					= 0x08,
+	BNO055_CONF_MAG_MODE_ENHANCED_REGULAR			= 0x10,
+	BNO055_CONF_MAG_MODE_HIGH_ACCURACY				= 0x18
+} bno055_mag_mode_t;
+
+typedef enum{
+	BNO055_CONF_MAG_PWRMODE_NORMAL					= 0x00,
+	BNO055_CONF_MAG_PWRMODE_SLEEP					= 0x20,
+	BNO055_CONF_MAG_PWRMODE_SUSPEND					= 0x40,
+	BNO055_CONF_MAG_PWRMODE_FORCED					= 0x60
+} bno055_mag_pwrmode_t;
 
 typedef struct{
 	int16_t accelOffsetX;
@@ -507,8 +532,9 @@ class BNO055{
 
 	void setAxisRemap(bno055_axis_config_t config = BNO055_REMAP_CONFIG_P1, bno055_axis_sign_t sign = BNO055_REMAP_SIGN_P1);
 	void setUnits(bno055_accel_unit_t accel = BNO055_UNIT_ACCEL_MS2, bno055_angular_rate_unit_t angularRate = BNO055_UNIT_ANGULAR_RATE_RPS, bno055_euler_unit_t euler = BNO055_UNIT_EULER_DEGREES, bno055_temperature_unit_t temp = BNO055_UNIT_TEMP_C, bno055_data_output_format_t format = BNO055_DATA_FORMAT_ANDROID);
-	void setAccelConfig(bno055_accel_range_t range = BNO055_CONF_ACCEL_RANGE_4G, bno055_accel_bandwidth_t bandwidth = BNO055_CONF_ACCEL_BANDWIDTH_62_5HZ, bno055_accel_opr_mode_t mode = BNO055_CONF_ACCEL_OPR_MODE_NORMAL);
+	void setAccelConfig(bno055_accel_range_t range = BNO055_CONF_ACCEL_RANGE_4G, bno055_accel_bandwidth_t bandwidth = BNO055_CONF_ACCEL_BANDWIDTH_62_5HZ, bno055_accel_mode_t mode = BNO055_CONF_ACCEL_MODE_NORMAL);
 	void setGyroConfig(bno055_gyro_range_t range = BNO055_CONF_GYRO_RANGE_2000DPS, bno055_gyro_bandwidth_t bandwidth = BNO055_CONF_GYRO_BANDWIDTH_32HZ, bno055_gyro_mode_t mode = BNO055_CONF_GYRO_MODE_NORMAL);
+	void setMagConfig(bno055_mag_rate_t rate = BNO055_CONF_MAG_RATE_20HZ, bno055_mag_pwrmode_t pwrmode = BNO055_CONF_MAG_PWRMODE_FORCED, bno055_mag_mode_t mode = BNO055_CONF_MAG_MODE_REGULAR);
 
 	void enableAccelSlowMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis=true, bool yAxis=true, bool zAxis=true, bool useInterruptPin=true);
 	void enableAccelNoMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis=true, bool yAxis=true, bool zAxis=true, bool useInterruptPin=true);

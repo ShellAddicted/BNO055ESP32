@@ -747,7 +747,7 @@ void BNO055::setUnits(bno055_accel_unit_t accel, bno055_angular_rate_unit_t angu
     write8(BNO055_REG_UNIT_SEL, tmp);
 }
 
-void BNO055::setAccelConfig(bno055_accel_range_t range, bno055_accel_bandwidth_t bandwidth, bno055_accel_opr_mode_t mode){
+void BNO055::setAccelConfig(bno055_accel_range_t range, bno055_accel_bandwidth_t bandwidth, bno055_accel_mode_t mode){
     if (_mode != BNO055_OPERATION_MODE_CONFIG){
         throw BNO055WrongOprMode("setAccelConfig requires BNO055_OPERATION_MODE_CONFIG");
     }
@@ -760,6 +760,9 @@ void BNO055::setAccelConfig(bno055_accel_range_t range, bno055_accel_bandwidth_t
 }
 
 void BNO055::setGyroConfig(bno055_gyro_range_t range, bno055_gyro_bandwidth_t bandwidth, bno055_gyro_mode_t mode){
+    if (_mode != BNO055_OPERATION_MODE_CONFIG){
+        throw BNO055WrongOprMode("setGyroConfig requires BNO055_OPERATION_MODE_CONFIG");
+    }
     setPage(1);
     uint8_t tmp = 0;
     tmp |= range;
@@ -768,6 +771,18 @@ void BNO055::setGyroConfig(bno055_gyro_range_t range, bno055_gyro_bandwidth_t ba
     tmp = 0;
     tmp |= mode;
     write8(BNO055_REG_GYR_CONFIG_1, tmp);
+}
+
+void BNO055::setMagConfig(bno055_mag_rate_t rate, bno055_mag_pwrmode_t pwrmode, bno055_mag_mode_t mode){
+    if (_mode != BNO055_OPERATION_MODE_CONFIG){
+        throw BNO055WrongOprMode("setMagConfig requires BNO055_OPERATION_MODE_CONFIG");
+    }
+    setPage(1);
+    uint8_t tmp = 0;
+    tmp |= rate;
+    tmp |= pwrmode;
+    tmp |= mode;
+    write8(BN0055_REG_MAG_CONFIG, tmp);
 }
 
 void BNO055::begin(){
