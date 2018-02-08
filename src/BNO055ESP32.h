@@ -209,11 +209,6 @@ class BNO055BaseException : public std::exception{
 	}
 };
 
-class BNO055TestExc : public BNO055BaseException{
-	public:
-	BNO055TestExc(std::string message = ";-(, there was an error.") : BNO055BaseException(message){};
-};
-
 class BNO055ReadFail : public BNO055BaseException{
 	public:
 	BNO055ReadFail(std::string message = "(!*)this is specified in datasheet, but it is not in UART Application note, so I don't have an official description.") : BNO055BaseException(message){};
