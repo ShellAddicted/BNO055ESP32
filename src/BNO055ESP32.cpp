@@ -726,7 +726,7 @@ void BNO055::setAxisRemap(bno055_axis_config_t config, bno055_axis_sign_t sign){
 
 void BNO055::setUnits(bno055_accel_unit_t accel, bno055_angular_rate_unit_t angularRate, bno055_euler_unit_t euler, bno055_temperature_unit_t temp, bno055_data_output_format_t format){
     if (_mode != BNO055_OPERATION_MODE_CONFIG){
-        throw BNO055WrongOprMode("setAxisRemap requires BNO055_OPERATION_MODE_CONFIG");
+        throw BNO055WrongOprMode("setUnits requires BNO055_OPERATION_MODE_CONFIG");
     }
     setPage(0);
     uint8_t tmp = 0;
@@ -757,8 +757,8 @@ void BNO055::setAccelConfig(bno055_accel_range_t range, bno055_accel_bandwidth_t
     tmp |= bandwidth;
     tmp |= mode;
     write8(BNO055_REG_ACC_CONFIG, tmp);
-
 }
+
 void BNO055::begin(){
     // Setup UART
     esp_err_t esperr = uart_driver_delete(_uartPort);
