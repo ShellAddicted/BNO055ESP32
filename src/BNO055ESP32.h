@@ -174,6 +174,33 @@ typedef enum{
 	BNO055_DATA_FORMAT_ANDROID						= 0x80
 } bno055_data_output_format_t;
 
+typedef enum{
+	BNO055_CONF_ACCEL_RANGE_2G						= 0x00,
+	BNO055_CONF_ACCEL_RANGE_4G						= 0x01,
+	BNO055_CONF_ACCEL_RANGE_8G						= 0x02,
+	BNO055_CONF_ACCEL_RANGE_16G						= 0x03,
+} bno055_accel_range_t;
+
+typedef enum{
+	BNO055_CONF_ACCEL_BANDWIDTH_7_81HZ				= 0x00,
+	BNO055_CONF_ACCEL_BANDWIDTH_15_63HZ				= 0x04,
+	BNO055_CONF_ACCEL_BANDWIDTH_31_25HZ				= 0x08,
+	BNO055_CONF_ACCEL_BANDWIDTH_62_5HZ				= 0x0C,
+	BNO055_CONF_ACCEL_BANDWIDTH_125HZ				= 0x10,
+	BNO055_CONF_ACCEL_BANDWIDTH_250HZ				= 0x14,
+	BNO055_CONF_ACCEL_BANDWIDTH_500HZ				= 0x08,
+	BNO055_CONF_ACCEL_BANDWIDTH_1000HZ				= 0x1C
+} bno055_accel_bandwidth_t;
+
+typedef enum{
+	BNO055_CONF_ACCEL_OPR_MODE_NORMAL				= 0x00,
+	BNO055_CONF_ACCEL_OPR_MODE_SUSPEND				= 0x20,
+	BNO055_CONF_ACCEL_OPR_MODE_LOW_POWER1			= 0x40,
+	BNO055_CONF_ACCEL_OPR_MODE_STANDBY				= 0x60,
+	BNO055_CONF_ACCEL_OPR_MODE_LOW_POWER2			= 0x80,
+	BNO055_CONF_ACCEL_OPR_MODE_DEEP_SUSPEND			= 0xA0
+} bno055_accel_opr_mode_t;
+
 typedef struct{
 	int16_t accelOffsetX;
     int16_t accelOffsetY;
@@ -453,6 +480,7 @@ class BNO055{
 
 	void setAxisRemap(bno055_axis_config_t config = BNO055_REMAP_CONFIG_P1, bno055_axis_sign_t sign = BNO055_REMAP_SIGN_P1);
 	void setUnits(bno055_accel_unit_t accel = BNO055_UNIT_ACCEL_MS2, bno055_angular_rate_unit_t angularRate = BNO055_UNIT_ANGULAR_RATE_RPS, bno055_euler_unit_t euler = BNO055_UNIT_EULER_DEGREES, bno055_temperature_unit_t temp = BNO055_UNIT_TEMP_C, bno055_data_output_format_t format = BNO055_DATA_FORMAT_ANDROID);
+	void setAccelConfig(bno055_accel_range_t range = BNO055_CONF_ACCEL_RANGE_4G, bno055_accel_bandwidth_t bandwidth = BNO055_CONF_ACCEL_BANDWIDTH_62_5HZ, bno055_accel_opr_mode_t mode = BNO055_CONF_ACCEL_OPR_MODE_NORMAL);
 
 	void enableAccelSlowMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis=true, bool yAxis=true, bool zAxis=true, bool useInterruptPin=true);
 	void enableAccelNoMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis=true, bool yAxis=true, bool zAxis=true, bool useInterruptPin=true);

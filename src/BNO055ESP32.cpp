@@ -746,6 +746,19 @@ void BNO055::setUnits(bno055_accel_unit_t accel, bno055_angular_rate_unit_t angu
     tmp |= format;
     write8(BNO055_REG_UNIT_SEL, tmp);
 }
+
+void BNO055::setAccelConfig(bno055_accel_range_t range, bno055_accel_bandwidth_t bandwidth, bno055_accel_opr_mode_t mode){
+    if (_mode != BNO055_OPERATION_MODE_CONFIG){
+        throw BNO055WrongOprMode("setAccelConfig requires BNO055_OPERATION_MODE_CONFIG");
+    }
+    setPage(1);
+    uint8_t tmp = 0;
+    tmp |= range;
+    tmp |= bandwidth;
+    tmp |= mode;
+    write8(BNO055_REG_ACC_CONFIG, tmp);
+
+}
 void BNO055::begin(){
     // Setup UART
     esp_err_t esperr = uart_driver_delete(_uartPort);
