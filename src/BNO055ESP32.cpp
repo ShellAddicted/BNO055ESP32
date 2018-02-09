@@ -542,7 +542,7 @@ void BNO055::enableInterrupt(uint8_t flag, bool useInterruptPin){
 
     //MSK
     read8(BNO055_REG_INT_MSK, &tmp);
-    tmp = (useInterruptPin == true) ? tmp | flag : tmp & ~flag;
+    tmp = (useInterruptPin == true) ? (tmp | flag) : (tmp & ~flag);
     write8(BNO055_REG_INT_MSK, tmp); //update
 }
 

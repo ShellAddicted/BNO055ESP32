@@ -43,7 +43,7 @@ extern "C" void app_main(){
 	BNO055 bno(UART_NUM_1, GPIO_NUM_17, GPIO_NUM_16);
 	try{
 		bno.begin(); //BNO055 is in CONFIG_MODE until it is changed
-		bno.setExtCrystalUse(true);
+		bno.enableExternalCrystal();
 		//bno.setSensorOffsets(storedOffsets);
 		//bno.setAxisRemap(BNO055_REMAP_CONFIG_P1, BNO055_REMAP_SIGN_P1); // see datasheet, section 3.4
 		bno.setOpMode(BNO055_OPERATION_MODE_NDOF);

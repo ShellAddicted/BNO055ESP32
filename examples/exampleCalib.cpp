@@ -26,25 +26,10 @@
 static const char *TAG = "BNO055ESP32Example";
 
 extern "C" void app_main(){
-	// This values are random, see exampleCalibration.cpp for more details.
-	// bno055_offsets_t storedOffsets;
-	// storedOffsets.accelOffsetX = 29;
-	// storedOffsets.accelOffsetY = 24;
-	// storedOffsets.accelOffsetZ = 16;
-	// storedOffsets.magOffsetX = -243;
-	// storedOffsets.magOffsetY = -420;
-	// storedOffsets.magOffsetZ = -131;
-	// storedOffsets.gyroOffsetX = 1;
-	// storedOffsets.gyroOffsetY = -1;
-	// storedOffsets.gyroOffsetZ = 0;
-	// storedOffsets.accelRadius = 0;
-	// storedOffsets.magRadius = 662;
-
 	BNO055 bno(UART_NUM_1, GPIO_NUM_17, GPIO_NUM_16);
 	try{
 		bno.begin(); //BNO055 is in CONFIG_MODE until it is changed
-		bno.setExtCrystalUse(true);
-		//bno.setSensorOffsets(storedOffsets);
+		bno.enableExternalCrystal();
 		//bno.setAxisRemap(BNO055_REMAP_CONFIG_P1, BNO055_REMAP_SIGN_P1); // see datasheet, section 3.4
 		bno.setOpMode(BNO055_OPERATION_MODE_NDOF);
 		ESP_LOGI(TAG, "Setup Done.");
@@ -69,6 +54,7 @@ extern "C" void app_main(){
                 bno.setOpMode(BNO055_OPERATION_MODE_CONFIG); //Change OPR_MODE
                 bno055_offsets_t txt = bno.getSensorOffsets(); //NOTE: this must be executed in CONFIG_MODE
                 ESP_LOGI(TAG, "\nOffsets:\nAccel: X:%d, Y:%d, Z:%d;\nMag: X:%d, Y:%d, Z:%d;\nGyro: X:%d, Y:%d, Z:%d;\nAccelRadius: %d;\nMagRadius: %d;\n", txt.accelOffsetX, txt.accelOffsetY, txt.accelOffsetZ, txt.magOffsetX, txt.magOffsetY, txt.magOffsetZ, txt.gyroOffsetX, txt.gyroOffsetY, txt.gyroOffsetZ, txt.accelRadius, txt.magRadius);
+				ESP_LOGI(TAG,"Store this values, place them using setSensorOffsets() after every reset of the BNO055 to avoid the calibration process, unluckily MAG requires to be calibrated after every reset, for more information consult datasheet.");
                 break;
             }
         }
