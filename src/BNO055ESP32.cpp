@@ -785,6 +785,28 @@ void BNO055::setMagConfig(bno055_mag_rate_t rate, bno055_mag_pwrmode_t pwrmode, 
     write8(BN0055_REG_MAG_CONFIG, tmp);
 }
 
+void BNO055::setGyroSleepConfig(bno055_gyro_auto_sleep_duration_t autoSleepDuration, bno055_gyro_sleep_duration_t sleepDuration){
+    if (_mode != BNO055_OPERATION_MODE_CONFIG){
+        throw BNO055WrongOprMode("setGyroSleepConfig requires BNO055_OPERATION_MODE_CONFIG");
+    }
+    setPage(1);
+    uint8_t tmp = 0;
+    tmp |= autoSleepDuration;
+    tmp |= sleepDuration;
+    write8(BNO055_REG_GYR_SLEEP_CONFIG, tmp);
+}
+
+void BNO055::setAccelSleepConfig(bno055_accel_sleep_duration_t sleepDuration, bno055_accel_sleep_mode_t sleepMode){
+    if (_mode != BNO055_OPERATION_MODE_CONFIG){
+        throw BNO055WrongOprMode("setAccelSleepConfig requires BNO055_OPERATION_MODE_CONFIG");
+    }
+    setPage(1);
+    uint8_t tmp = 0;
+    tmp |= sleepDuration;
+    tmp |= sleepMode;
+    write8(BNO055_REG_ACC_SLEEP_CONFIG, tmp);    
+}
+
 void BNO055::begin(){
     // Setup UART
     esp_err_t esperr = uart_driver_delete(_uartPort);

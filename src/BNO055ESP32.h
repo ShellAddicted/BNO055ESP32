@@ -253,6 +253,47 @@ typedef enum{
 	BNO055_CONF_MAG_PWRMODE_FORCED					= 0x60
 } bno055_mag_pwrmode_t;
 
+typedef enum{
+	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_4MS		= 0x08,
+	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_5MS		= 0x10,
+	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_8MS		= 0x18,
+	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_10MS		= 0x20,
+	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_15MS		= 0x28,
+	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_20MS		= 0x30,
+	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_40MS		= 0x38
+} bno055_gyro_auto_sleep_duration_t;
+
+typedef enum{
+	BNO055_CONF_GYRO_SLEEP_DURATION_2MS				= 0x00,
+	BNO055_CONF_GYRO_SLEEP_DURATION_4MS				= 0x01,
+	BNO055_CONF_GYRO_SLEEP_DURATION_5MS				= 0x02,
+	BNO055_CONF_GYRO_SLEEP_DURATION_8MS				= 0x03,
+	BNO055_CONF_GYRO_SLEEP_DURATION_10MS			= 0x04,
+	BNO055_CONF_GYRO_SLEEP_DURATION_15MS			= 0x05,
+	BNO055_CONF_GYRO_SLEEP_DURATION_18MS			= 0x06,
+	BNO055_CONF_GYRO_SLEEP_DURATION_20MS			= 0x07
+} bno055_gyro_sleep_duration_t;
+
+typedef enum{
+	BNO055_CONF_ACCEL_SLEEP_DURATION_0_5MS			= 0x00,
+	BNO055_CONF_ACCEL_SLEEP_DURATION_1MS			= 0x0C,
+	BNO055_CONF_ACCEL_SLEEP_DURATION_2MS			= 0x0E,
+	BNO055_CONF_ACCEL_SLEEP_DURATION_4MS			= 0x10,
+	BNO055_CONF_ACCEL_SLEEP_DURATION_6MS			= 0x12,
+	BNO055_CONF_ACCEL_SLEEP_DURATION_10MS			= 0x14,
+	BNO055_CONF_ACCEL_SLEEP_DURATION_25MS			= 0x16,
+	BNO055_CONF_ACCEL_SLEEP_DURATION_50MS			= 0x18,
+	BNO055_CONF_ACCEL_SLEEP_DURATION_100MS			= 0x1A,
+	BNO055_CONF_ACCEL_SLEEP_DURATION_500MS			= 0x1C,
+	BNO055_CONF_ACCEL_SLEEP_DURATION_1000MS			= 0x1E
+} bno055_accel_sleep_duration_t;
+
+typedef enum{
+	BNO055_CONF_ACCEL_SLEEP_MODE_EVTDRIVEN			= 0x00,
+	BNO055_CONF_ACCEL_SLEEP_MODE_SAMPLING			= 0x01
+} bno055_accel_sleep_mode_t;
+
+
 typedef struct{
 	int16_t accelOffsetX;
     int16_t accelOffsetY;
@@ -535,6 +576,8 @@ class BNO055{
 	void setAccelConfig(bno055_accel_range_t range = BNO055_CONF_ACCEL_RANGE_4G, bno055_accel_bandwidth_t bandwidth = BNO055_CONF_ACCEL_BANDWIDTH_62_5HZ, bno055_accel_mode_t mode = BNO055_CONF_ACCEL_MODE_NORMAL);
 	void setGyroConfig(bno055_gyro_range_t range = BNO055_CONF_GYRO_RANGE_2000DPS, bno055_gyro_bandwidth_t bandwidth = BNO055_CONF_GYRO_BANDWIDTH_32HZ, bno055_gyro_mode_t mode = BNO055_CONF_GYRO_MODE_NORMAL);
 	void setMagConfig(bno055_mag_rate_t rate = BNO055_CONF_MAG_RATE_20HZ, bno055_mag_pwrmode_t pwrmode = BNO055_CONF_MAG_PWRMODE_FORCED, bno055_mag_mode_t mode = BNO055_CONF_MAG_MODE_REGULAR);
+	void setGyroSleepConfig(bno055_gyro_auto_sleep_duration_t autoSleepDuration, bno055_gyro_sleep_duration_t sleepDuration);
+	void setAccelSleepConfig(bno055_accel_sleep_duration_t sleepDuration, bno055_accel_sleep_mode_t sleepMode);
 
 	void enableAccelSlowMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis=true, bool yAxis=true, bool zAxis=true, bool useInterruptPin=true);
 	void enableAccelNoMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis=true, bool yAxis=true, bool zAxis=true, bool useInterruptPin=true);
