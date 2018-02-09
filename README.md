@@ -6,3 +6,8 @@ mkdir -p <YOUR_PROJECT_ROOT>/components/
 cd <YOUR_PROJECT_ROOT>/components/
 git clone https://github.com/ShellAddicted/BNO055ESP32.git
 ```
+
+this library uses the BNO055's UART interface due to issues with i2c probabily caused by Clock Stretching.
+when these issues will fixed, i2c support will be added.
+
+Tested on ESP32-DevKitC & Adafruit's BNO055 Breakout Board.
