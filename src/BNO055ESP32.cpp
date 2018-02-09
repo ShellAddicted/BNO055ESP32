@@ -26,10 +26,6 @@
 /* used in ESP_LOG macros */
 static const char *BNO055_LOG_TAG = "BNO055";
 
-static void IRAM_ATTR bno055_interrupt_handler(void* arg){
-    //static_cast<BNO055*>(arg)->something;
-}
-
 BNO055::BNO055(uart_port_t uartPort, gpio_num_t txPin, gpio_num_t rxPin, gpio_num_t rstPin, gpio_num_t intPin){
     _uartPort = uartPort;
     _txPin = txPin;
@@ -260,11 +256,17 @@ void BNO055::setOpMode(bno055_opmode_t mode, bool forced){
 }
 
 void BNO055::setPwrMode(bno055_powermode_t pwrMode){
+    if (_mode != BNO055_OPERATION_MODE_CONFIG){
+        throw BNO055WrongOprMode("setPwrMode requires BNO055_OPERATION_MODE_CONFIG");
+    }
     setPage(0);
     write8(BNO055_REG_PWR_MODE, pwrMode);
 }
 
 void BNO055::setExtCrystalUse(bool state){
+    if (_mode != BNO055_OPERATION_MODE_CONFIG){
+        throw BNO055WrongOprMode("setExtCrystalUse requires BNO055_OPERATION_MODE_CONFIG");
+    }
     setPage(0);
     uint8_t tmp = 0;
     read8(BNO055_REG_SYS_TRIGGER, &tmp);
@@ -280,8 +282,6 @@ void BNO055::enableExternalCrystal(){
 void BNO055::disableExternalCrystal(){
     setExtCrystalUse(false);
 }
-
-
 
 bno055_system_status_t BNO055::getSystemStatus(){
     setPage(0);
@@ -521,141 +521,145 @@ void BNO055::setSensorOffsets(bno055_offsets_t newOffsets){
 
 void BNO055::clearInterruptPin(){
     setPage(0);
+    interruptFlag = false;
     uint8_t tmp = 0;
     read8(BNO055_REG_SYS_TRIGGER, &tmp);
     tmp |= 0x40;
     write8(BNO055_REG_SYS_TRIGGER, tmp);
 }
 
-void BNO055::enableAccelSlowMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis, bool yAxis, bool zAxis, bool useInterruptPin){
+void IRAM_ATTR BNO055::bno055_interrupt_handler(void* arg){
+    static_cast<BNO055*>(arg)->interruptFlag = true;
+}
+
+void BNO055::enableInterrupt(uint8_t flag, bool useInterruptPin){
+    uint8_t tmp = 0;
+    setPage(1);
+    //INT_EN
+    read8(BNO055_REG_INT_EN, &tmp);
+    tmp |= flag;
+    write8(BNO055_REG_INT_EN, tmp); //update
+
+    //MSK
+    read8(BNO055_REG_INT_MSK, &tmp);
+    tmp = (useInterruptPin == true) ? tmp | flag : tmp & ~flag;
+    write8(BNO055_REG_INT_MSK, tmp); //update
+}
+
+void BNO055::disableInterrupt(uint8_t flag){
+    uint8_t tmp = 0;
+    setPage(1);
+    //INT_EN
+    read8(BNO055_REG_INT_EN, &tmp);
+    tmp &= ~flag;
+    write8(BNO055_REG_INT_EN, tmp); //update
+}
+
+void BNO055::enableAccelSlowMotionInterrupt(bool useInterruptPin){
+    enableInterrupt(0x80,useInterruptPin);
+}
+
+void BNO055::setAccelSlowMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis, bool yAxis, bool zAxis){
     if (_mode != BNO055_OPERATION_MODE_CONFIG){
-        throw BNO055WrongOprMode("enableAccelSlowMotionInterrupt requires BNO055_OPERATION_MODE_CONFIG");
+        throw BNO055WrongOprMode("setAccelSlowMotionInterrupt requires BNO055_OPERATION_MODE_CONFIG");
     }
     uint8_t tmp = 0;
     setPage(1);
     write8(BNO055_REG_ACC_NM_SET, ((duration << 1) | 0x00)); // duration and Slow Motion flag
     write8(BNO055_REG_ACC_NM_THRES, threshold);
     read8(BNO055_REG_ACC_INT_SETTINGS, &tmp); //read the current value to avoid overwrite of other bits
+    tmp = (xAxis == true) ? (tmp | 0x04) : (tmp & ~0x04);
+    tmp = (yAxis == true) ? (tmp | 0x08) : (tmp & ~0x08);
+    tmp = (zAxis == true) ? (tmp | 0x10) : (tmp & ~0x10);
     write8(BNO055_REG_ACC_INT_SETTINGS, tmp); //update
-
-    //INT_EN
-    read8(BNO055_REG_INT_EN, &tmp);
-    tmp |= 0x80;
-
-    write8(BNO055_REG_INT_EN, tmp); //update
-
-    //MSK
-    if (useInterruptPin == true){
-        read8(BNO055_REG_INT_MSK, &tmp);
-        tmp |= 0x80;
-        write8(BNO055_REG_INT_MSK, tmp); //update
-    }
+    enableAccelSlowMotionInterrupt();
 }
 
-void BNO055::enableAccelNoMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis, bool yAxis, bool zAxis, bool useInterruptPin){
+void BNO055::disableAccelSlowMotionInterrupt(){
+    disableInterrupt(0x80);
+}
+
+void BNO055::enableAccelNoMotionInterrupt(bool useInterruptPin){
+    enableAccelSlowMotionInterrupt(useInterruptPin);
+}
+
+void BNO055::setAccelNoMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis, bool yAxis, bool zAxis){
     if (_mode != BNO055_OPERATION_MODE_CONFIG){
-        throw BNO055WrongOprMode("enableAccelNoMotionInterrupt requires BNO055_OPERATION_MODE_CONFIG");
+        throw BNO055WrongOprMode("setAccelNoMotionInterrupt requires BNO055_OPERATION_MODE_CONFIG");
     }
     uint8_t tmp = 0;
     setPage(1);
 
     write8(BNO055_REG_ACC_NM_SET, ((duration << 1) | 0x01)); // duration and No Motion flag
-
     write8(BNO055_REG_ACC_NM_THRES, threshold);
-
     read8(BNO055_REG_ACC_INT_SETTINGS, &tmp); //read the current value to avoid overwrite of other bits
-
     tmp = (xAxis == true) ? (tmp | 0x04) : (tmp & ~0x04);
     tmp = (yAxis == true) ? (tmp | 0x08) : (tmp & ~0x08);
     tmp = (zAxis == true) ? (tmp | 0x10) : (tmp & ~0x10);
-
     write8(BNO055_REG_ACC_INT_SETTINGS, tmp); //update
-    
-    //INT_EN
-    read8(BNO055_REG_INT_EN, &tmp);
-    tmp |= 0x80;
-
-    write8(BNO055_REG_INT_EN, tmp); //update
-
-    //MSK
-    if (useInterruptPin == true){
-        read8(BNO055_REG_INT_MSK, &tmp);
-        tmp |= 0x80;
-        write8(BNO055_REG_INT_MSK, tmp); //update
-    }
 }
 
-void BNO055::enableAccelAnyMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis, bool yAxis, bool zAxis, bool useInterruptPin){
+void BNO055::disableAccelNoMotionInterrupt(){
+    disableAccelSlowMotionInterrupt();
+}
+
+void BNO055::enableAccelAnyMotionInterrupt(bool useInterruptPin){
+    enableInterrupt(0x40, useInterruptPin);
+}
+
+void BNO055::setAccelAnyMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis, bool yAxis, bool zAxis){
     if (_mode != BNO055_OPERATION_MODE_CONFIG){
-        throw BNO055WrongOprMode("enableAccelAnyMotionInterrupt requires BNO055_OPERATION_MODE_CONFIG");
+        throw BNO055WrongOprMode("setAccelAnyMotionInterrupt requires BNO055_OPERATION_MODE_CONFIG");
     }
     uint8_t tmp = 0;
     setPage(1);
-
     write8(BNO055_REG_ACC_AM_THRES, threshold);
-
     read8(BNO055_REG_ACC_INT_SETTINGS, &tmp); //read the current value to avoid overwrite of other bits
-
     tmp |= (duration & 0x03);
     tmp = (xAxis == true) ? (tmp | 0x04) : (tmp & ~0x04);
     tmp = (yAxis == true) ? (tmp | 0x08) : (tmp & ~0x08);
     tmp = (zAxis == true) ? (tmp | 0x10) : (tmp & ~0x10);
-
     write8(BNO055_REG_ACC_INT_SETTINGS, tmp); //update
-    //INT_EN
-    read8(BNO055_REG_INT_EN, &tmp);
-    tmp |= 0x40;
-
-    write8(BNO055_REG_INT_EN, tmp); //update
-        
-    //MSK
-    if (useInterruptPin==true){
-        read8(BNO055_REG_INT_MSK, &tmp);
-        tmp |= 0x40;
-        write8(BNO055_REG_INT_MSK, tmp); //update
-    }
 }
 
-void BNO055::enableAccelHighGInterrupt(uint8_t threshold, uint8_t duration, bool xAxis, bool yAxis, bool zAxis, bool useInterruptPin){
+void BNO055::disableAccelAnyMotionInterrupt(){
+    disableInterrupt(0x40);
+}
+
+void BNO055::enableAccelHighGInterrupt(bool useInterruptPin){
+    enableInterrupt(0x20, useInterruptPin);
+}
+
+void BNO055::setAccelHighGInterrupt(uint8_t threshold, uint8_t duration, bool xAxis, bool yAxis, bool zAxis){
     if (_mode != BNO055_OPERATION_MODE_CONFIG){
-        throw BNO055WrongOprMode("enableAccelHighGInterrupt requires BNO055_OPERATION_MODE_CONFIG");
+        throw BNO055WrongOprMode("setAccelHighGInterrupt requires BNO055_OPERATION_MODE_CONFIG");
     }
     uint8_t tmp = 0;
     setPage(1);
-    
     write8(BNO055_REG_ACC_HG_THRES, threshold);
-
     write8(BNO055_REG_ACC_HG_DURATION, duration);
-
     read8(BNO055_REG_ACC_INT_SETTINGS, &tmp); //read the current value to avoid overwrite of other bits
-
     tmp = (xAxis == true) ? (tmp | 0x20) : (tmp & ~0x20);
     tmp = (yAxis == true) ? (tmp | 0x40) : (tmp & ~0x40);
     tmp = (zAxis == true) ? (tmp | 0x80) : (tmp & ~0x80);
-
     write8(BNO055_REG_ACC_INT_SETTINGS, tmp); //update
-
-    //INT_EN
-    read8(BNO055_REG_INT_EN, &tmp);
-    tmp |= 0x20;
-    write8(BNO055_REG_INT_EN, tmp); //update
-    
-    //MSK
-    if (useInterruptPin == true){
-        read8(BNO055_REG_INT_MSK, &tmp);
-        tmp |= 0x20;
-        write8(BNO055_REG_INT_MSK, tmp); //update
-    }
 }
 
-void BNO055::enableGyroAnyMotionInterrupt(uint8_t threshold, uint8_t slopeSamples, uint8_t awakeDuration, bool xAxis, bool yAxis, bool zAxis, bool filtered, bool useInterruptPin){
+void BNO055::disableAccelHighGInterrupt(){
+    disableInterrupt(0x20);
+}
+
+void BNO055::enableGyroAnyMotionInterrupt(bool useInterruptPin){
+    enableInterrupt(0x04, useInterruptPin);
+}
+
+void BNO055::setGyroAnyMotionInterrupt(uint8_t threshold, uint8_t slopeSamples, uint8_t awakeDuration, bool xAxis, bool yAxis, bool zAxis, bool filtered){
     if (_mode != BNO055_OPERATION_MODE_CONFIG){
-        throw BNO055WrongOprMode("enableGyroAnyMotionInterrupt requires BNO055_OPERATION_MODE_CONFIG");
+        throw BNO055WrongOprMode("setGyroAnyMotionInterrupt requires BNO055_OPERATION_MODE_CONFIG");
     }
     uint8_t tmp = 0;
     setPage(1);
     write8(BNO055_REG_GYR_AM_THRES, threshold);
-
     tmp |= (awakeDuration & 0x03);
     tmp = (tmp << 2) | (threshold & 0x03);
     write8(BNO055_REG_GYR_AM_SET, tmp);
@@ -665,36 +669,29 @@ void BNO055::enableGyroAnyMotionInterrupt(uint8_t threshold, uint8_t slopeSample
     tmp = (yAxis == true) ? (tmp | 0x02) : (tmp & ~0x02);
     tmp = (zAxis == true) ? (tmp | 0x04) : (tmp & ~0x04);
     tmp = (filtered == true ) ? (tmp & ~0x40) : (tmp | 0x40);
-
     write8(BNO055_REG_GYR_INT_SETTING, tmp); //update
-    
-    //INT_EN
-    read8(BNO055_REG_INT_EN, &tmp);
-    tmp |= 0x04;
-    write8(BNO055_REG_INT_EN, tmp); //update
-
-    //MSK
-    if (useInterruptPin == true){
-        read8(BNO055_REG_INT_MSK, &tmp);
-        tmp |= 0x04;
-        write8(BNO055_REG_INT_MSK, tmp); //update
-    }
 }
 
-void BNO055::enableGyroHRInterrupt(uint8_t thresholdX, uint8_t durationX, uint8_t hysteresisX,uint8_t thresholdY, uint8_t durationY, uint8_t hysteresisY, uint8_t thresholdZ, uint8_t durationZ, uint8_t hysteresisZ, bool xAxis, bool yAxis, bool zAxis, bool filtered, bool useInterruptPin){
+void BNO055::disableGyroAnyMotionInterrupt(){
+    disableInterrupt(0x04);
+}
+
+void BNO055::enableGyroHRInterrupt(bool useInterruptPin){
+    enableInterrupt(0x08, useInterruptPin);
+}
+
+void BNO055::setGyroHRInterrupt(uint8_t thresholdX, uint8_t durationX, uint8_t hysteresisX,uint8_t thresholdY, uint8_t durationY, uint8_t hysteresisY, uint8_t thresholdZ, uint8_t durationZ, uint8_t hysteresisZ, bool xAxis, bool yAxis, bool zAxis, bool filtered){
     if (_mode != BNO055_OPERATION_MODE_CONFIG){
-        throw BNO055WrongOprMode("enableGyroHRInterrupt requires BNO055_OPERATION_MODE_CONFIG");
+        throw BNO055WrongOprMode("setGyroHRInterrupt requires BNO055_OPERATION_MODE_CONFIG");
     }
     uint8_t tmp = 0;
     setPage(1);
 
     read8(BNO055_REG_GYR_INT_SETTING, &tmp); //read the current value to avoid overwrite of other bits
-
     tmp = (xAxis == true) ? (tmp | 0x01) : (tmp & ~0x01);
     tmp = (yAxis == true) ? (tmp | 0x02) : (tmp & ~0x02);
     tmp = (zAxis == true) ? (tmp | 0x04) : (tmp & ~0x04);
     tmp = (filtered == true ) ? (tmp & ~0x40) : (tmp | 0x40);
-
     write8(BNO055_REG_GYR_INT_SETTING, tmp); //update
 
     tmp = 0;
@@ -717,18 +714,10 @@ void BNO055::enableGyroHRInterrupt(uint8_t thresholdX, uint8_t durationX, uint8_
     write8(BNO055_REG_GYR_HR_Z_SET, tmp);
     
     write8(BNO055_REG_GYR_DUR_Z, durationZ);
+}
 
-    //INT_EN
-    read8(BNO055_REG_INT_EN, &tmp);
-    tmp |= 0x08;
-    write8(BNO055_REG_INT_EN, tmp); //update
-
-    //MSK
-    if (useInterruptPin == true){
-        read8(BNO055_REG_INT_MSK, &tmp);
-        tmp |= 0x08;
-        write8(BNO055_REG_INT_MSK, tmp); //update
-    }
+void BNO055::disableGyroHRInterrupt(){
+    disableInterrupt(0x08);
 }
 
 void BNO055::setAxisRemap(bno055_axis_config_t config, bno055_axis_sign_t sign){

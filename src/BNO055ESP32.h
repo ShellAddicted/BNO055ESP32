@@ -575,19 +575,44 @@ class BNO055{
 
 	void setAxisRemap(bno055_axis_config_t config = BNO055_REMAP_CONFIG_P1, bno055_axis_sign_t sign = BNO055_REMAP_SIGN_P1);
 	void setUnits(bno055_accel_unit_t accel = BNO055_UNIT_ACCEL_MS2, bno055_angular_rate_unit_t angularRate = BNO055_UNIT_ANGULAR_RATE_RPS, bno055_euler_unit_t euler = BNO055_UNIT_EULER_DEGREES, bno055_temperature_unit_t temp = BNO055_UNIT_TEMP_C, bno055_data_output_format_t format = BNO055_DATA_FORMAT_ANDROID);
+	
 	void setAccelConfig(bno055_accel_range_t range = BNO055_CONF_ACCEL_RANGE_4G, bno055_accel_bandwidth_t bandwidth = BNO055_CONF_ACCEL_BANDWIDTH_62_5HZ, bno055_accel_mode_t mode = BNO055_CONF_ACCEL_MODE_NORMAL);
 	void setGyroConfig(bno055_gyro_range_t range = BNO055_CONF_GYRO_RANGE_2000DPS, bno055_gyro_bandwidth_t bandwidth = BNO055_CONF_GYRO_BANDWIDTH_32HZ, bno055_gyro_mode_t mode = BNO055_CONF_GYRO_MODE_NORMAL);
 	void setMagConfig(bno055_mag_rate_t rate = BNO055_CONF_MAG_RATE_20HZ, bno055_mag_pwrmode_t pwrmode = BNO055_CONF_MAG_PWRMODE_FORCED, bno055_mag_mode_t mode = BNO055_CONF_MAG_MODE_REGULAR);
+	
 	void setGyroSleepConfig(bno055_gyro_auto_sleep_duration_t autoSleepDuration, bno055_gyro_sleep_duration_t sleepDuration);
 	void setAccelSleepConfig(bno055_accel_sleep_duration_t sleepDuration, bno055_accel_sleep_mode_t sleepMode);
 
-	void enableAccelSlowMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis=true, bool yAxis=true, bool zAxis=true, bool useInterruptPin=true);
-	void enableAccelNoMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis=true, bool yAxis=true, bool zAxis=true, bool useInterruptPin=true);
-	void enableAccelAnyMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis=true, bool yAxis=true, bool zAxis=true, bool useInterruptPin=true);
-	void enableAccelHighGInterrupt(uint8_t threshold, uint8_t duration, bool xAxis=true, bool yAxis=true, bool zAxis=true, bool useInterruptPin=true);
-	void enableGyroAnyMotionInterrupt(uint8_t threshold, uint8_t slopeSamples, uint8_t awakeDuration, bool xAxis, bool yAxis, bool zAxis, bool filtered, bool useInterruptPin=true);
-	void enableGyroHRInterrupt(uint8_t thresholdX, uint8_t durationX, uint8_t hysteresisX,uint8_t thresholdY, uint8_t durationY, uint8_t hysteresisY, uint8_t thresholdZ, uint8_t durationZ, uint8_t hysteresisZ, bool xAxis=true, bool yAxis=true, bool zAxis=true, bool filtered=true, bool useInterruptPin=true);
+	void enableInterrupt(uint8_t flag, bool useInterruptPin=true);
+	void disableInterrupt(uint8_t flag);
+
+	void enableAccelSlowMotionInterrupt(bool useInterruptPin=true);
+	void setAccelSlowMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis=true, bool yAxis=true, bool zAxis=true);
+	void disableAccelSlowMotionInterrupt();
+
+	void enableAccelNoMotionInterrupt(bool useInterruptPin=true);
+	void setAccelNoMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis=true, bool yAxis=true, bool zAxis=true);
+	void disableAccelNoMotionInterrupt();
+
+	void enableAccelAnyMotionInterrupt(bool useInterruptPin=true);
+	void setAccelAnyMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis=true, bool yAxis=true, bool zAxis=true);
+	void disableAccelAnyMotionInterrupt();
+
+	void enableAccelHighGInterrupt(bool useInterruptPin=true);
+	void setAccelHighGInterrupt(uint8_t threshold, uint8_t duration, bool xAxis=true, bool yAxis=true, bool zAxis=true);
+	void disableAccelHighGInterrupt();
+
+	void enableGyroAnyMotionInterrupt(bool useInterruptPin=true);
+	void setGyroAnyMotionInterrupt(uint8_t threshold, uint8_t slopeSamples, uint8_t awakeDuration, bool xAxis=true, bool yAxis=true, bool zAxis=true, bool filtered=true);
+	void disableGyroAnyMotionInterrupt();
+
+	void enableGyroHRInterrupt(bool useInterruptPin=true);
+	void setGyroHRInterrupt(uint8_t thresholdX, uint8_t duration, uint8_t hysteresisX,uint8_t thresholdY, uint8_t durationY, uint8_t hysteresisY, uint8_t thresholdZ, uint8_t durationZ, uint8_t hysteresisZ, bool xAxis=true, bool yAxis=true, bool zAxis=true, bool filtered=true);
+	void disableGyroHRInterrupt();
+	
 	void clearInterruptPin();
+	static void IRAM_ATTR bno055_interrupt_handler(void* arg);
+
 	std::exception getException(uint8_t errcode);
 
 	void readLen(bno055_reg_t reg, uint8_t len, uint8_t *buffer, uint32_t timoutMS = DEFAULT_UART_TIMEOUT_MS);
@@ -595,6 +620,8 @@ class BNO055{
 
 	void writeLen(bno055_reg_t reg, uint8_t *data, uint8_t len, uint32_t timoutMS = DEFAULT_UART_TIMEOUT_MS);
 	void write8(bno055_reg_t reg, uint8_t val, uint32_t timoutMS = DEFAULT_UART_TIMEOUT_MS);
+
+	bool interruptFlag = false;
 
 	protected:
 		uint8_t UART_ROUND_NUM = 64;
