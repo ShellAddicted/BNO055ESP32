@@ -266,14 +266,22 @@ void BNO055::setPwrMode(bno055_powermode_t pwrMode){
 
 void BNO055::setExtCrystalUse(bool state){
     setPage(0);
-    if (state == true) {
-        write8(BNO055_REG_SYS_TRIGGER, 0x80);
-    }
-    else {
-        write8(BNO055_REG_SYS_TRIGGER, 0x00);
-    }
+    uint8_t tmp = 0;
+    read8(BNO055_REG_SYS_TRIGGER, &tmp);
+    tmp |= (state == true) ? 0x80 : 0x0;
+    write8(BNO055_REG_SYS_TRIGGER, tmp);
     vTaskDelay(650 /portTICK_PERIOD_MS);
 }
+
+void BNO055::enableExternalCrystal(){
+    setExtCrystalUse(true);
+}
+
+void BNO055::disableExternalCrystal(){
+    setExtCrystalUse(false);
+}
+
+
 
 bno055_system_status_t BNO055::getSystemStatus(){
     setPage(0);
@@ -509,6 +517,14 @@ void BNO055::setSensorOffsets(bno055_offsets_t newOffsets){
 
     write8(BNO055_REG_MAG_RADIUS_LSB, (newOffsets.magRadius & 0xFF));
     write8(BNO055_REG_MAG_RADIUS_MSB, ((newOffsets.magRadius >> 8) & 0xFF));
+}
+
+void BNO055::clearInterruptPin(){
+    setPage(0);
+    uint8_t tmp = 0;
+    read8(BNO055_REG_SYS_TRIGGER, &tmp);
+    tmp |= 0x40;
+    write8(BNO055_REG_SYS_TRIGGER, tmp);
 }
 
 void BNO055::enableAccelSlowMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis, bool yAxis, bool zAxis, bool useInterruptPin){

@@ -550,6 +550,8 @@ class BNO055{
 	void setPwrMode(bno055_powermode_t pwrMode);
 
 	void setExtCrystalUse(bool state);
+	void enableExternalCrystal();
+	void disableExternalCrystal();
 	bno055_calibration_t getCalibration();
 	
 	int8_t getTemp();
@@ -585,6 +587,7 @@ class BNO055{
 	void enableAccelHighGInterrupt(uint8_t threshold, uint8_t duration, bool xAxis=true, bool yAxis=true, bool zAxis=true, bool useInterruptPin=true);
 	void enableGyroAnyMotionInterrupt(uint8_t threshold, uint8_t slopeSamples, uint8_t awakeDuration, bool xAxis, bool yAxis, bool zAxis, bool filtered, bool useInterruptPin=true);
 	void enableGyroHRInterrupt(uint8_t thresholdX, uint8_t durationX, uint8_t hysteresisX,uint8_t thresholdY, uint8_t durationY, uint8_t hysteresisY, uint8_t thresholdZ, uint8_t durationZ, uint8_t hysteresisZ, bool xAxis=true, bool yAxis=true, bool zAxis=true, bool filtered=true, bool useInterruptPin=true);
+	void clearInterruptPin();
 	std::exception getException(uint8_t errcode);
 
 	void readLen(bno055_reg_t reg, uint8_t len, uint8_t *buffer, uint32_t timoutMS = DEFAULT_UART_TIMEOUT_MS);
