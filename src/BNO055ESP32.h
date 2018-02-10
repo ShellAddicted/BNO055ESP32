@@ -233,22 +233,6 @@ typedef enum{
 } bno055_powermode_t;
 
 typedef enum{
-	BNO055_OPERATION_MODE_CONFIG											= 0x00,
-	BNO055_OPERATION_MODE_ACCONLY											= 0x01,
-	BNO055_OPERATION_MODE_MAGONLY											= 0x02,
-	BNO055_OPERATION_MODE_GYRONLY											= 0x03,
-	BNO055_OPERATION_MODE_ACCMAG											= 0x04,
-	BNO055_OPERATION_MODE_ACCGYRO											= 0x05,
-	BNO055_OPERATION_MODE_MAGGYRO											= 0x06,
-	BNO055_OPERATION_MODE_AMG												= 0x07,
-	BNO055_OPERATION_MODE_IMU												= 0x08,
-	BNO055_OPERATION_MODE_COMPASS											= 0x09,
-	BNO055_OPERATION_MODE_M4G												= 0x0A,
-	BNO055_OPERATION_MODE_NDOF_FMC_OFF										= 0x0B,
-	BNO055_OPERATION_MODE_NDOF												= 0x0C
-} bno055_opmode_t;
-
-typedef enum{
 	BNO055_REMAP_CONFIG_P0													= 0x21,
 	BNO055_REMAP_CONFIG_P1													= 0x24,
 	BNO055_REMAP_CONFIG_P2													= 0x24,
@@ -547,10 +531,21 @@ class BNO055{
 
 	void setPage(uint8_t page, bool forced = false);
 
-	void setOpMode(bno055_opmode_t mode, bool forced = false);
 	void setPwrMode(bno055_powermode_t pwrMode);
+	void setOprModeConfig(bool forced=false);
+	void setOprModeAccOnly(bool forced=false);
+	void setOprModeMagOnly(bool forced=false);
+	void setOprModeGyroOnly(bool forced=false);
+	void setOprModeAccMag(bool forced=false);
+	void setOprModeAccGyro(bool forced=false);
+	void setOprModeMagGyro(bool forced=false);
+	void setOprModeAMG(bool forced=false);
+	void setOprModeIMU(bool forced=false);
+	void setOprModeCompass(bool forced=false);
+	void setOprModeM4G(bool forced=false);
+	void setOprModeNdofFmcOff(bool forced=false);
+	void setOprModeNdof(bool forced=false);
 
-	void setExtCrystalUse(bool state);
 	void enableExternalCrystal();
 	void disableExternalCrystal();
 
@@ -619,13 +614,48 @@ class BNO055{
 	bool interruptFlag = false;
 
 	protected:
+		const uart_config_t uart_config = {
+			.baud_rate = 115200,
+			.data_bits = UART_DATA_8_BITS,
+			.parity    = UART_PARITY_DISABLE,
+			.stop_bits = UART_STOP_BITS_1,
+			.flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+			.rx_flow_ctrl_thresh = 0,
+			.use_ref_tick = false
+		};
+
+		typedef enum{
+			BNO055_VECTOR_ACCELEROMETER												= 0x08, // Default: m/s²
+			BNO055_VECTOR_MAGNETOMETER												= 0x0E, // Default: uT
+			BNO055_VECTOR_GYROSCOPE													= 0x14, // Default: rad/s
+			BNO055_VECTOR_EULER														= 0x1A, // Default: degrees
+			BNO055_VECTOR_LINEARACCEL												= 0x28, // Default: m/s²
+			BNO055_VECTOR_GRAVITY													= 0x2E  // Default: m/s² 
+		} bno055_vector_type_t;
+		
+		typedef enum{
+			BNO055_OPERATION_MODE_CONFIG											= 0x00,
+			BNO055_OPERATION_MODE_ACCONLY											= 0x01,
+			BNO055_OPERATION_MODE_MAGONLY											= 0x02,
+			BNO055_OPERATION_MODE_GYRONLY											= 0x03,
+			BNO055_OPERATION_MODE_ACCMAG											= 0x04,
+			BNO055_OPERATION_MODE_ACCGYRO											= 0x05,
+			BNO055_OPERATION_MODE_MAGGYRO											= 0x06,
+			BNO055_OPERATION_MODE_AMG												= 0x07,
+			BNO055_OPERATION_MODE_IMU												= 0x08,
+			BNO055_OPERATION_MODE_COMPASS											= 0x09,
+			BNO055_OPERATION_MODE_M4G												= 0x0A,
+			BNO055_OPERATION_MODE_NDOF_FMC_OFF										= 0x0B,
+			BNO055_OPERATION_MODE_NDOF												= 0x0C
+		} bno055_opmode_t;
+
 		uint8_t UART_ROUND_NUM = 64;
 		
 		gpio_num_t _rstPin;
 		gpio_num_t _intPin;
 		
 		uint8_t _page;
-		bno055_opmode_t _mode;
+		
 		uart_port_t _uartPort;
 		
 		gpio_num_t _txPin;
@@ -637,28 +667,14 @@ class BNO055{
 		uint16_t eulerScale = 16;
 		uint16_t magScale = 16;
 
-		typedef enum{
-			BNO055_VECTOR_ACCELEROMETER						=	0x08, // Default: m/s²
-			BNO055_VECTOR_MAGNETOMETER						=	0x0E, // Default: uT
-			BNO055_VECTOR_GYROSCOPE							=	0x14, // Default: rad/s
-			BNO055_VECTOR_EULER								=	0x1A, // Default: degrees
-			BNO055_VECTOR_LINEARACCEL						=	0x28, // Default: m/s²
-			BNO055_VECTOR_GRAVITY							=	0x2E  // Default: m/s² 
-		} bno055_vector_type_t;
+		bno055_opmode_t _mode;
+		void setOprMode(bno055_opmode_t mode, bool forced=false);
+
+		void setExtCrystalUse(bool state);
 
 		bno055_vector_t getVector(bno055_vector_type_t vec);
 		void enableInterrupt(uint8_t flag, bool useInterruptPin=true);
 		void disableInterrupt(uint8_t flag);
-			
-		const uart_config_t uart_config = {
-			.baud_rate = 115200,
-			.data_bits = UART_DATA_8_BITS,
-			.parity    = UART_PARITY_DISABLE,
-			.stop_bits = UART_STOP_BITS_1,
-			.flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-			.rx_flow_ctrl_thresh = 0,
-			.use_ref_tick = false
-		};
 };
 
 #endif

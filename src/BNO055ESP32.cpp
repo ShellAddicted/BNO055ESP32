@@ -246,13 +246,65 @@ void BNO055::setPage(uint8_t page, bool forced){
     }
 }
 
-void BNO055::setOpMode(bno055_opmode_t mode, bool forced){
+void BNO055::setOprMode(bno055_opmode_t mode, bool forced){
     setPage(0);
     if (_mode != mode || forced == true){
         write8(BNO055_REG_OPR_MODE, mode);
         vTaskDelay(30 / portTICK_PERIOD_MS);
         _mode = mode;
     }
+}
+
+void BNO055::setOprModeConfig(bool forced){
+    setOprMode(BNO055_OPERATION_MODE_CONFIG, forced);
+}
+
+void BNO055::setOprModeAccOnly(bool forced){
+    setOprMode(BNO055_OPERATION_MODE_ACCONLY, forced);
+}
+
+void BNO055::setOprModeMagOnly(bool forced){
+    setOprMode(BNO055_OPERATION_MODE_MAGONLY, forced);
+}
+
+void BNO055::setOprModeGyroOnly(bool forced){
+    setOprMode(BNO055_OPERATION_MODE_GYRONLY, forced);
+}
+
+void BNO055::setOprModeAccMag(bool forced){
+    setOprMode(BNO055_OPERATION_MODE_ACCMAG, forced);
+}
+
+void BNO055::setOprModeAccGyro(bool forced){
+    setOprMode(BNO055_OPERATION_MODE_ACCGYRO, forced);
+}
+
+void BNO055::setOprModeMagGyro(bool forced){
+    setOprMode(BNO055_OPERATION_MODE_MAGGYRO, forced);
+}
+
+void BNO055::setOprModeAMG(bool forced){
+    setOprMode(BNO055_OPERATION_MODE_AMG, forced);
+}
+
+void BNO055::setOprModeIMU(bool forced){
+    setOprMode(BNO055_OPERATION_MODE_IMU, forced);
+}
+
+void BNO055::setOprModeCompass(bool forced){
+    setOprMode(BNO055_OPERATION_MODE_COMPASS, forced);
+}
+
+void BNO055::setOprModeM4G(bool forced){
+    setOprMode(BNO055_OPERATION_MODE_M4G, forced);
+}
+
+void BNO055::setOprModeNdofFmcOff(bool forced){
+    setOprMode(BNO055_OPERATION_MODE_NDOF_FMC_OFF, forced);
+}
+
+void BNO055::setOprModeNdof(bool forced){
+    setOprMode(BNO055_OPERATION_MODE_NDOF, forced);
 }
 
 void BNO055::setPwrMode(bno055_powermode_t pwrMode){
@@ -841,6 +893,6 @@ void BNO055::begin(){
         throw BNO055ChipNotDetected(); // this is not the correct device, check your wiring
     }
     setPage(0, true); //forced
-    setOpMode(BNO055_OPERATION_MODE_CONFIG, true); // this should be the default OPR_MODE
+    setOprMode(BNO055_OPERATION_MODE_CONFIG, true); // this should be the default OPR_MODE
     write8(BNO055_REG_SYS_TRIGGER, 0x0);
 }

@@ -46,7 +46,7 @@ extern "C" void app_main(){
 		bno.enableExternalCrystal();
 		//bno.setSensorOffsets(storedOffsets);
 		//bno.setAxisRemap(BNO055_REMAP_CONFIG_P1, BNO055_REMAP_SIGN_P1); // see datasheet, section 3.4
-		bno.setOpMode(BNO055_OPERATION_MODE_NDOF);
+		bno.setOprModeNdof();
 		ESP_LOGI(TAG, "Setup Done.");
 	}
 	catch (BNO055BaseException& ex){
