@@ -46,8 +46,10 @@ extern "C" void app_main(){
 		bno.enableExternalCrystal();
 		//bno.setSensorOffsets(storedOffsets);
 		//bno.setAxisRemap(BNO055_REMAP_CONFIG_P1, BNO055_REMAP_SIGN_P1); // see datasheet, section 3.4
-		bno.setAccelAnyMotionInterrupt(1, 1, true, true, true); // configure the interrupt, see datasheet for more details.
+		bno.setAccelAnyMotionInterrupt(2, 2, true, true, true); // configure the interrupt, see datasheet for more details.
+		bno.setAccelNoMotionInterrupt(0,0, true, true, true);
 		bno.enableAccelAnyMotionInterrupt(true); // you can disable it with disableAccelAnyMotionInterrupt();
+		bno.enableAccelNoMotionInterrupt(true);
 		bno.setOprModeNdof();
 		ESP_LOGI(TAG, "Setup Done.");
 	}
@@ -65,7 +67,15 @@ extern "C" void app_main(){
     
 	while (1){
 		if (bno.interruptFlag == true){
-			ESP_LOGI(TAG, "Interrupt received.");
+			//See bno055_interrupts_status_t for more details.
+			bno055_interrupts_status_t ist = bno.getInterruptsStatus();
+			// remmeber that multiple interrupts can be triggered at the same time. so you shouldn't use 'else if'
+			if (ist.accelAnyMotion == 1){
+				ESP_LOGI(TAG, "AccelAnyMotion Interrupt received.");
+			}
+			if (ist.accelNoSlowMotion == 1){
+				ESP_LOGI(TAG, "accelNoSlowMotion Interrupt received.");
+			}
 			bno.clearInterruptPin(); //don't forget to place this.
 		}
 		try{

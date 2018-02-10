@@ -570,6 +570,19 @@ void BNO055::setSensorOffsets(bno055_offsets_t newOffsets){
     write8(BNO055_REG_MAG_RADIUS_MSB, ((newOffsets.magRadius >> 8) & 0xFF));
 }
 
+bno055_interrupts_status_t BNO055::getInterruptsStatus(){
+    setPage(0);
+    uint8_t tmp = 0;
+    bno055_interrupts_status_t status;
+    read8(BNO055_REG_INT_STA, &tmp);
+    status.gyroAnyMotion = (tmp >> 2) & 0x01;
+    status.gyroHR = (tmp >> 3) & 0x01;
+    status.accelHighG = (tmp >> 5) & 0x01;
+    status.accelAnyMotion = (tmp >> 6) & 0x01;
+    status.accelNoSlowMotion = (tmp >> 7) & 0x01;
+    return status;
+}
+
 void BNO055::clearInterruptPin(){
     setPage(0);
     interruptFlag = false;

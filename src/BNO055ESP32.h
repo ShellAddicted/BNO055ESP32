@@ -441,6 +441,14 @@ typedef struct{
 	uint8_t accel = 0;
 } bno055_calibration_t;
 
+typedef struct{
+	uint8_t accelNoSlowMotion = 0;
+	uint8_t accelAnyMotion = 0;
+	uint8_t accelHighG = 0;
+	uint8_t gyroHR = 0;
+	uint8_t gyroAnyMotion = 0;
+} bno055_interrupts_status_t;
+
 class BNO055BaseException : public std::exception{
 	protected:
 	std::string _msg;
@@ -601,6 +609,7 @@ class BNO055{
 	void setGyroHRInterrupt(uint8_t thresholdX, uint8_t duration, uint8_t hysteresisX,uint8_t thresholdY, uint8_t durationY, uint8_t hysteresisY, uint8_t thresholdZ, uint8_t durationZ, uint8_t hysteresisZ, bool xAxis=true, bool yAxis=true, bool zAxis=true, bool filtered=true);
 	void disableGyroHRInterrupt();
 	
+	bno055_interrupts_status_t getInterruptsStatus();
 	void clearInterruptPin();
 	static void IRAM_ATTR bno055_interrupt_handler(void* arg);
 
