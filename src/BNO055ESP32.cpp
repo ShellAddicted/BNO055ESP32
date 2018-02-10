@@ -291,7 +291,6 @@ bno055_system_status_t BNO055::getSystemStatus(){
 }
 
 bno055_self_test_result_t BNO055::getSelfTestResult(){
-    //1 = test passed <-> 0 = test failed
     setPage(0);
     uint8_t tmp;
     bno055_self_test_result_t res;

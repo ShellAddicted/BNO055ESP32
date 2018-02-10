@@ -38,7 +38,147 @@
 #endif
 #include "esp_log.h"
 
-#define DEFAULT_UART_TIMEOUT_MS 20 // you can try to decrease/increse this.
+#define DEFAULT_UART_TIMEOUT_MS 20 // you can try to decrease/increase this.
+
+// BNO055 Registers(Table 4-1, Pag 51)
+typedef enum{
+	// PAGE 1
+	BNO055_REG_ACC_CONFIG													= 0x08,
+	BN0055_REG_MAG_CONFIG													= 0x09,
+	BNO055_REG_GYR_CONFIG_0													= 0x0A,
+	BNO055_REG_GYR_CONFIG_1													= 0x0B,
+
+	BNO055_REG_ACC_SLEEP_CONFIG												= 0x0C,
+	BNO055_REG_GYR_SLEEP_CONFIG												= 0x0D,
+
+	BNO055_REG_INT_MSK														= 0x0F,
+	BNO055_REG_INT_EN														= 0x10,
+
+	BNO055_REG_ACC_AM_THRES													= 0x11,
+	BNO055_REG_ACC_INT_SETTINGS												= 0x12,
+	BNO055_REG_ACC_HG_DURATION												= 0x13,
+	BNO055_REG_ACC_HG_THRES													= 0x14,
+	BNO055_REG_ACC_NM_THRES													= 0x15,
+	BNO055_REG_ACC_NM_SET													= 0x16,
+	BNO055_REG_GYR_INT_SETTING												= 0x17,
+	BNO055_REG_GYR_HR_X_SET													= 0x18,
+	BNO055_REG_GYR_DUR_X													= 0x19,
+	BNO055_REG_GYR_HR_Y_SET													= 0x1A,
+	BNO055_REG_GYR_DUR_Y													= 0x1B,
+	BNO055_REG_GYR_HR_Z_SET													= 0x1C,
+	BNO055_REG_GYR_DUR_Z													= 0x1D,
+	BNO055_REG_GYR_AM_THRES													= 0x1E,
+	BNO055_REG_GYR_AM_SET													= 0x1F,
+	
+	BNO055_REG_PAGE_ID														= 0x07,
+	
+	// PAGE 0
+	BNO055_REG_CHIP_ID														= 0x00,
+	BNO055_REG_ACC_ID														= 0x01,
+	BNO055_REG_MAG_ID														= 0x02,
+	BNO055_REG_GYRO_ID														= 0x03,
+	BNO055_REG_SW_REV_ID_LSB												= 0x04,
+	BNO055_REG_SW_REV_ID_MSB												= 0x05,
+	BNO055_REG_BL_REV_ID													= 0x06,
+
+	BNO055_REG_ACC_DATA_X_LSB												= 0x08,
+	BNO055_REG_ACC_DATA_X_MSB												= 0x09,
+	BNO055_REG_ACC_DATA_Y_LSB												= 0x0A,
+	BNO055_REG_ACC_DATA_Y_MSB												= 0x0B,
+	BNO055_REG_ACC_DATA_Z_LSB												= 0x0C,
+	BNO055_REG_ACC_DATA_Z_MSB												= 0x0D,
+
+	BNO055_REG_MAG_DATA_X_LSB												= 0x0E,
+	BNO055_REG_MAG_DATA_X_MSB												= 0x0F,
+	BNO055_REG_MAG_DATA_Y_LSB												= 0x10,
+	BNO055_REG_MAG_DATA_Y_MSB												= 0x11,
+	BNO055_REG_MAG_DATA_Z_LSB												= 0x12,
+	BNO055_REG_MAG_DATA_Z_MSB												= 0x13,
+
+	BNO055_REG_GYR_DATA_X_LSB												= 0x14,
+	BNO055_REG_GYR_DATA_X_MSB												= 0x15,
+	BNO055_REG_GYR_DATA_Y_LSB												= 0x16,
+	BNO055_REG_GYR_DATA_Y_MSB												= 0x17,
+	BNO055_REG_GYR_DATA_Z_LSB												= 0x18,
+	BNO055_REG_GYR_DATA_Z_MSB												= 0x19,
+
+	BNO055_REG_EUL_HEADING_LSB												= 0x1A,
+	BNO055_REG_EUL_HEADING_MSB												= 0x1B,
+	BNO055_REG_EUL_ROLL_LSB													= 0x1C,
+	BNO055_REG_EUL_ROLL_MSB													= 0x1D,
+	BNO055_REG_EUL_PITCH_LSB												= 0x1E,
+	BNO055_REG_EUL_PITCH_MSB												= 0x1F,
+
+	BNO055_REG_QUA_DATA_W_LSB												= 0x20,
+	BNO055_REG_QUA_DATA_W_MSB												= 0x21,
+	BNO055_REG_QUA_DATA_X_LSB												= 0x22,
+	BNO055_REG_QUA_DATA_X_MSB												= 0x23,
+	BNO055_REG_QUA_DATA_Y_LSB												= 0x24,
+	BNO055_REG_QUA_DATA_Y_MSB												= 0x25,
+	BNO055_REG_QUA_DATA_Z_LSB												= 0x26,
+	BNO055_REG_QUA_DATA_Z_MSB												= 0x27,
+
+	BNO055_REG_LIA_DATA_X_LSB												= 0x28,
+	BNO055_REG_LIA_DATA_X_MSB												= 0x29,
+	BNO055_REG_LIA_DATA_Y_LSB												= 0x2A,
+	BNO055_REG_LIA_DATA_Y_MSB												= 0x2B,
+	BNO055_REG_LIA_DATA_Z_LSB												= 0x2C,
+	BNO055_REG_LIA_DATA_Z_MSB												= 0x2D,
+
+	BNO055_REG_GRV_DATA_X_LSB												= 0x2E,
+	BNO055_REG_GRV_DATA_X_MSB												= 0x2F,
+	BNO055_REG_GRV_DATA_Y_LSB												= 0x30,
+	BNO055_REG_GRV_DATA_Y_MSB												= 0x31,
+	BNO055_REG_GRV_DATA_Z_LSB												= 0x32,
+	BNO055_REG_GRV_DATA_Z_MSB												= 0x33,
+
+	BNO055_REG_TEMP															= 0x34,
+
+	BNO055_REG_CALIB_STAT													= 0x35,
+	BNO055_REG_ST_RESULT													= 0x36,
+	BNO055_REG_INT_STA														= 0x37,
+
+	BNO055_REG_SYS_CLK_STAT													= 0x38,
+	BNO055_REG_SYS_STATUS													= 0x39,
+	BNO055_REG_SYS_ERR														= 0x3A,
+
+	BNO055_REG_UNIT_SEL														= 0x3B,
+
+	BNO055_REG_OPR_MODE														= 0x3D,
+	BNO055_REG_PWR_MODE														= 0x3E,
+	BNO055_REG_SYS_TRIGGER													= 0x3F,
+	BNO055_REG_TEMP_SOURCE													= 0x40,
+
+	BNO055_REG_AXIS_MAP_CONFIG												= 0x41,
+	BNO055_REG_AXIS_MAP_SIGN												= 0x42,
+
+	BNO055_REG_ACC_OFFSET_X_LSB												= 0x55,
+	BNO055_REG_ACC_OFFSET_X_MSB												= 0x56, 
+	BNO055_REG_ACC_OFFSET_Y_LSB												= 0x57,
+	BNO055_REG_ACC_OFFSET_Y_MSB												= 0x58,
+	BNO055_REG_ACC_OFFSET_Z_LSB												= 0x59,
+	BNO055_REG_ACC_OFFSET_Z_MSB												= 0x5A,
+
+	BNO055_REG_MAG_OFFSET_X_LSB												= 0x5B,
+	BNO055_REG_MAG_OFFSET_X_MSB												= 0x5C,
+	BNO055_REG_MAG_OFFSET_Y_LSB												= 0x5D,
+	BNO055_REG_MAG_OFFSET_Y_MSB												= 0x5E,
+	BNO055_REG_MAG_OFFSET_Z_LSB												= 0x5F,
+	BNO055_REG_MAG_OFFSET_Z_MSB												= 0x60,
+
+	BNO055_REG_GYR_OFFSET_X_LSB												= 0x61,
+	BNO055_REG_GYR_OFFSET_X_MSB												= 0x62,
+	BNO055_REG_GYR_OFFSET_Y_LSB												= 0x63,
+	BNO055_REG_GYR_OFFSET_Y_MSB												= 0x64,
+	BNO055_REG_GYR_OFFSET_Z_LSB												= 0x65,
+	BNO055_REG_GYR_OFFSET_Z_MSB												= 0x66,
+
+	BNO055_REG_ACC_RADIUS_LSB												= 0x67,
+	BNO055_REG_ACC_RADIUS_MSB												= 0x68,
+
+	BNO055_REG_MAG_RADIUS_LSB												= 0x69,
+	BNO055_REG_MAG_RADIUS_MSB												= 0x6A
+} bno055_reg_t;
 
 /* System Status [SYS_STATUS] (sec: 4.3.58)
 	0 = Idle
@@ -50,7 +190,7 @@
 	6 = System running without fusion algorithms
 */
 typedef enum{
-	BNO055_SYSTEM_STATUS_IDLE												= 0x0,
+	BNO055_SYSTEM_STATUS_IDLE												= 0x00,
 	BNO055_SYSTEM_STATUS_SYSTEM_ERROR										= 0x01,
 	BNO055_SYSTEM_STATUS_INITIALIZING_PERIPHERALS							= 0x02,
 	BNO055_SYSTEM_STATUS_SYSTEM_INITIALIZATION								= 0x03,
@@ -87,235 +227,234 @@ typedef enum{
 } bno055_system_error_t;
 
 typedef enum{
-	BNO055_PWR_MODE_NORMAL							= 0x00,
-	BNO055_PWR_MODE_LOWPOWER						= 0x01,
-	BNO055_PWR_MODE_SUSPEND							= 0x02
+	BNO055_PWR_MODE_NORMAL													= 0x00,
+	BNO055_PWR_MODE_LOWPOWER												= 0x01,
+	BNO055_PWR_MODE_SUSPEND													= 0x02
 } bno055_powermode_t;
 
 typedef enum{
-	BNO055_OPERATION_MODE_CONFIG					= 0x00,
-	BNO055_OPERATION_MODE_ACCONLY					= 0x01,
-	BNO055_OPERATION_MODE_MAGONLY					= 0x02,
-	BNO055_OPERATION_MODE_GYRONLY					= 0x03,
-	BNO055_OPERATION_MODE_ACCMAG					= 0x04,
-	BNO055_OPERATION_MODE_ACCGYRO					= 0x05,
-	BNO055_OPERATION_MODE_MAGGYRO					= 0x06,
-	BNO055_OPERATION_MODE_AMG						= 0x07,
-	BNO055_OPERATION_MODE_IMU						= 0x08,
-	BNO055_OPERATION_MODE_COMPASS					= 0x09,
-	BNO055_OPERATION_MODE_M4G						= 0x0A,
-	BNO055_OPERATION_MODE_NDOF_FMC_OFF				= 0x0B,
-	BNO055_OPERATION_MODE_NDOF						= 0x0C
+	BNO055_OPERATION_MODE_CONFIG											= 0x00,
+	BNO055_OPERATION_MODE_ACCONLY											= 0x01,
+	BNO055_OPERATION_MODE_MAGONLY											= 0x02,
+	BNO055_OPERATION_MODE_GYRONLY											= 0x03,
+	BNO055_OPERATION_MODE_ACCMAG											= 0x04,
+	BNO055_OPERATION_MODE_ACCGYRO											= 0x05,
+	BNO055_OPERATION_MODE_MAGGYRO											= 0x06,
+	BNO055_OPERATION_MODE_AMG												= 0x07,
+	BNO055_OPERATION_MODE_IMU												= 0x08,
+	BNO055_OPERATION_MODE_COMPASS											= 0x09,
+	BNO055_OPERATION_MODE_M4G												= 0x0A,
+	BNO055_OPERATION_MODE_NDOF_FMC_OFF										= 0x0B,
+	BNO055_OPERATION_MODE_NDOF												= 0x0C
 } bno055_opmode_t;
 
 typedef enum{
-	BNO055_REMAP_CONFIG_P0							= 0x21,
-	BNO055_REMAP_CONFIG_P1							= 0x24,
-	BNO055_REMAP_CONFIG_P2							= 0x24,
-	BNO055_REMAP_CONFIG_P3							= 0x21,
-	BNO055_REMAP_CONFIG_P4							= 0x24,
-	BNO055_REMAP_CONFIG_P5							= 0x21,
-	BNO055_REMAP_CONFIG_P6							= 0x21,
-	BNO055_REMAP_CONFIG_P7							= 0x24
+	BNO055_REMAP_CONFIG_P0													= 0x21,
+	BNO055_REMAP_CONFIG_P1													= 0x24,
+	BNO055_REMAP_CONFIG_P2													= 0x24,
+	BNO055_REMAP_CONFIG_P3													= 0x21,
+	BNO055_REMAP_CONFIG_P4													= 0x24,
+	BNO055_REMAP_CONFIG_P5													= 0x21,
+	BNO055_REMAP_CONFIG_P6													= 0x21,
+	BNO055_REMAP_CONFIG_P7													= 0x24
 } bno055_axis_config_t;
 
 typedef enum{
-	BNO055_REMAP_SIGN_P0							= 0x04,
-	BNO055_REMAP_SIGN_P1							= 0x00,
-	BNO055_REMAP_SIGN_P2							= 0x06,
-	BNO055_REMAP_SIGN_P3							= 0x02,
-	BNO055_REMAP_SIGN_P4							= 0x03,
-	BNO055_REMAP_SIGN_P5							= 0x01,
-	BNO055_REMAP_SIGN_P6							= 0x07,
-	BNO055_REMAP_SIGN_P7							= 0x05
+	BNO055_REMAP_SIGN_P0													= 0x04,
+	BNO055_REMAP_SIGN_P1													= 0x00,
+	BNO055_REMAP_SIGN_P2													= 0x06,
+	BNO055_REMAP_SIGN_P3													= 0x02,
+	BNO055_REMAP_SIGN_P4													= 0x03,
+	BNO055_REMAP_SIGN_P5													= 0x01,
+	BNO055_REMAP_SIGN_P6													= 0x07,
+	BNO055_REMAP_SIGN_P7													= 0x05
 } bno055_axis_sign_t;
 
 typedef struct{
-	uint8_t mcuState;
-	uint8_t gyrState;
-	uint8_t magState;
+	uint8_t mcuState = 0;
+	uint8_t gyrState = 0;
+	uint8_t magState = 0;
 } bno055_self_test_result_t;
 
 typedef struct{
-	double x;
-	double y;
-	double z;
+	double x = 0;
+	double y = 0;
+	double z = 0;
 } bno055_vector_t;
 
 typedef struct{
-	double w;
-	double x;
-	double y;
-	double z;
+	double w = 0;
+	double x = 0;
+	double y = 0;
+	double z = 0;
 } bno055_quaternion_t;
 
 typedef enum{
-	BNO055_UNIT_ACCEL_MS2							= 0x00, //m/s²
-	BNO055_UNIT_ACCEL_MG							= 0X01
+	BNO055_UNIT_ACCEL_MS2													= 0x00, //m/s²
+	BNO055_UNIT_ACCEL_MG													= 0X01
 } bno055_accel_unit_t;
 
 typedef enum{
-	BNO055_UNIT_ANGULAR_RATE_DPS					= 0x00,
-	BNO055_UNIT_ANGULAR_RATE_RPS					= 0x02
+	BNO055_UNIT_ANGULAR_RATE_DPS											= 0x00,
+	BNO055_UNIT_ANGULAR_RATE_RPS											= 0x02
 } bno055_angular_rate_unit_t;
 
 typedef enum{
-	BNO055_UNIT_EULER_DEGREES						= 0x00,
-	BNO055_UNIT_EULER_RADIANS						= 0x04
+	BNO055_UNIT_EULER_DEGREES												= 0x00,
+	BNO055_UNIT_EULER_RADIANS												= 0x04
 } bno055_euler_unit_t;
 
 typedef enum{
-	BNO055_UNIT_TEMP_C								= 0x00,
-	BNO055_UNIT_TEMP_F								= 0x10
+	BNO055_UNIT_TEMP_C														= 0x00,
+	BNO055_UNIT_TEMP_F														= 0x10
 } bno055_temperature_unit_t;
 
 typedef enum{
-	BNO055_DATA_FORMAT_WINDOWS						= 0x00,
-	BNO055_DATA_FORMAT_ANDROID						= 0x80
+	BNO055_DATA_FORMAT_WINDOWS												= 0x00,
+	BNO055_DATA_FORMAT_ANDROID												= 0x80
 } bno055_data_output_format_t;
 
 typedef enum{
-	BNO055_CONF_ACCEL_RANGE_2G						= 0x00,
-	BNO055_CONF_ACCEL_RANGE_4G						= 0x01,
-	BNO055_CONF_ACCEL_RANGE_8G						= 0x02,
-	BNO055_CONF_ACCEL_RANGE_16G						= 0x03,
+	BNO055_CONF_ACCEL_RANGE_2G												= 0x00,
+	BNO055_CONF_ACCEL_RANGE_4G												= 0x01,
+	BNO055_CONF_ACCEL_RANGE_8G												= 0x02,
+	BNO055_CONF_ACCEL_RANGE_16G												= 0x03,
 } bno055_accel_range_t;
 
 typedef enum{
-	BNO055_CONF_ACCEL_BANDWIDTH_7_81HZ				= 0x00,
-	BNO055_CONF_ACCEL_BANDWIDTH_15_63HZ				= 0x04,
-	BNO055_CONF_ACCEL_BANDWIDTH_31_25HZ				= 0x08,
-	BNO055_CONF_ACCEL_BANDWIDTH_62_5HZ				= 0x0C,
-	BNO055_CONF_ACCEL_BANDWIDTH_125HZ				= 0x10,
-	BNO055_CONF_ACCEL_BANDWIDTH_250HZ				= 0x14,
-	BNO055_CONF_ACCEL_BANDWIDTH_500HZ				= 0x08,
-	BNO055_CONF_ACCEL_BANDWIDTH_1000HZ				= 0x1C
+	BNO055_CONF_ACCEL_BANDWIDTH_7_81HZ										= 0x00,
+	BNO055_CONF_ACCEL_BANDWIDTH_15_63HZ										= 0x04,
+	BNO055_CONF_ACCEL_BANDWIDTH_31_25HZ										= 0x08,
+	BNO055_CONF_ACCEL_BANDWIDTH_62_5HZ										= 0x0C,
+	BNO055_CONF_ACCEL_BANDWIDTH_125HZ										= 0x10,
+	BNO055_CONF_ACCEL_BANDWIDTH_250HZ										= 0x14,
+	BNO055_CONF_ACCEL_BANDWIDTH_500HZ										= 0x08,
+	BNO055_CONF_ACCEL_BANDWIDTH_1000HZ										= 0x1C
 } bno055_accel_bandwidth_t;
 
 typedef enum{
-	BNO055_CONF_ACCEL_MODE_NORMAL					= 0x00,
-	BNO055_CONF_ACCEL_MODE_SUSPEND					= 0x20,
-	BNO055_CONF_ACCEL_MODE_LOW_POWER1				= 0x40,
-	BNO055_CONF_ACCEL_MODE_STANDBY					= 0x60,
-	BNO055_CONF_ACCEL_MODE_LOW_POWER2				= 0x80,
-	BNO055_CONF_ACCEL_MODE_DEEP_SUSPEND				= 0xA0
+	BNO055_CONF_ACCEL_MODE_NORMAL											= 0x00,
+	BNO055_CONF_ACCEL_MODE_SUSPEND											= 0x20,
+	BNO055_CONF_ACCEL_MODE_LOW_POWER1										= 0x40,
+	BNO055_CONF_ACCEL_MODE_STANDBY											= 0x60,
+	BNO055_CONF_ACCEL_MODE_LOW_POWER2										= 0x80,
+	BNO055_CONF_ACCEL_MODE_DEEP_SUSPEND										= 0xA0
 } bno055_accel_mode_t;
 
 typedef enum{
-	BNO055_CONF_GYRO_RANGE_2000DPS					= 0x00,
-	BNO055_CONF_GYRO_RANGE_1000DPS					= 0x01,
-	BNO055_CONF_GYRO_RANGE_500DPS					= 0x02,
-	BNO055_CONF_GYRO_RANGE_250DPS					= 0x03,
-	BNO055_CONF_GYRO_RANGE_125DPS					= 0x04
+	BNO055_CONF_GYRO_RANGE_2000DPS											= 0x00,
+	BNO055_CONF_GYRO_RANGE_1000DPS											= 0x01,
+	BNO055_CONF_GYRO_RANGE_500DPS											= 0x02,
+	BNO055_CONF_GYRO_RANGE_250DPS											= 0x03,
+	BNO055_CONF_GYRO_RANGE_125DPS											= 0x04
 } bno055_gyro_range_t;
 
 typedef enum{
-	BNO055_CONF_GYRO_BANDWIDTH_523HZ				= 0x00,
-	BNO055_CONF_GYRO_BANDWIDTH_230HZ				= 0x08,
-	BNO055_CONF_GYRO_BANDWIDTH_116HZ				= 0x10,
-	BNO055_CONF_GYRO_BANDWIDTH_47HZ					= 0x18,
-	BNO055_CONF_GYRO_BANDWIDTH_23HZ					= 0x20,
-	BNO055_CONF_GYRO_BANDWIDTH_12HZ					= 0x28,
-	BNO055_CONF_GYRO_BANDWIDTH_64HZ					= 0x30,
-	BNO055_CONF_GYRO_BANDWIDTH_32HZ					= 0x38
+	BNO055_CONF_GYRO_BANDWIDTH_523HZ										= 0x00,
+	BNO055_CONF_GYRO_BANDWIDTH_230HZ										= 0x08,
+	BNO055_CONF_GYRO_BANDWIDTH_116HZ										= 0x10,
+	BNO055_CONF_GYRO_BANDWIDTH_47HZ											= 0x18,
+	BNO055_CONF_GYRO_BANDWIDTH_23HZ											= 0x20,
+	BNO055_CONF_GYRO_BANDWIDTH_12HZ											= 0x28,
+	BNO055_CONF_GYRO_BANDWIDTH_64HZ											= 0x30,
+	BNO055_CONF_GYRO_BANDWIDTH_32HZ											= 0x38
 } bno055_gyro_bandwidth_t;
 
 typedef enum{
-	BNO055_CONF_GYRO_MODE_NORMAL					= 0x00,
-	BNO055_CONF_GYRO_MODE_FAST_PWR_UP				= 0x01,
-	BNO055_CONF_GYRO_MODE_DEEP_SUSPEND				= 0x02,
-	BNO055_CONF_GYRO_MODE_SUSPEND					= 0x03,
-	BNO055_CONF_GYRO_MODE_ADVANCED_PWR_SAVE			= 0x04
+	BNO055_CONF_GYRO_MODE_NORMAL											= 0x00,
+	BNO055_CONF_GYRO_MODE_FAST_PWR_UP										= 0x01,
+	BNO055_CONF_GYRO_MODE_DEEP_SUSPEND										= 0x02,
+	BNO055_CONF_GYRO_MODE_SUSPEND											= 0x03,
+	BNO055_CONF_GYRO_MODE_ADVANCED_PWR_SAVE									= 0x04
 } bno055_gyro_mode_t;
 
 typedef enum{
-	BNO055_CONF_MAG_RATE_2HZ						= 0x00,
-	BNO055_CONF_MAG_RATE_6HZ						= 0x01,
-	BNO055_CONF_MAG_RATE_8HZ						= 0x02,
-	BNO055_CONF_MAG_RATE_10HZ						= 0x03,
-	BNO055_CONF_MAG_RATE_15HZ						= 0x04,
-	BNO055_CONF_MAG_RATE_20HZ						= 0x05,
-	BNO055_CONF_MAG_RATE_25HZ						= 0x06,
-	BNO055_CONF_MAG_RATE_30HZ						= 0x07
+	BNO055_CONF_MAG_RATE_2HZ												= 0x00,
+	BNO055_CONF_MAG_RATE_6HZ												= 0x01,
+	BNO055_CONF_MAG_RATE_8HZ												= 0x02,
+	BNO055_CONF_MAG_RATE_10HZ												= 0x03,
+	BNO055_CONF_MAG_RATE_15HZ												= 0x04,
+	BNO055_CONF_MAG_RATE_20HZ												= 0x05,
+	BNO055_CONF_MAG_RATE_25HZ												= 0x06,
+	BNO055_CONF_MAG_RATE_30HZ												= 0x07
 } bno055_mag_rate_t;
 
 typedef enum{
-	BNO055_CONF_MAG_MODE_LOW_PWR					= 0x00,
-	BNO055_CONF_MAG_MODE_REGULAR					= 0x08,
-	BNO055_CONF_MAG_MODE_ENHANCED_REGULAR			= 0x10,
-	BNO055_CONF_MAG_MODE_HIGH_ACCURACY				= 0x18
+	BNO055_CONF_MAG_MODE_LOW_PWR											= 0x00,
+	BNO055_CONF_MAG_MODE_REGULAR											= 0x08,
+	BNO055_CONF_MAG_MODE_ENHANCED_REGULAR									= 0x10,
+	BNO055_CONF_MAG_MODE_HIGH_ACCURACY										= 0x18
 } bno055_mag_mode_t;
 
 typedef enum{
-	BNO055_CONF_MAG_PWRMODE_NORMAL					= 0x00,
-	BNO055_CONF_MAG_PWRMODE_SLEEP					= 0x20,
-	BNO055_CONF_MAG_PWRMODE_SUSPEND					= 0x40,
-	BNO055_CONF_MAG_PWRMODE_FORCED					= 0x60
+	BNO055_CONF_MAG_PWRMODE_NORMAL											= 0x00,
+	BNO055_CONF_MAG_PWRMODE_SLEEP											= 0x20,
+	BNO055_CONF_MAG_PWRMODE_SUSPEND											= 0x40,
+	BNO055_CONF_MAG_PWRMODE_FORCED											= 0x60
 } bno055_mag_pwrmode_t;
 
 typedef enum{
-	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_4MS		= 0x08,
-	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_5MS		= 0x10,
-	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_8MS		= 0x18,
-	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_10MS		= 0x20,
-	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_15MS		= 0x28,
-	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_20MS		= 0x30,
-	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_40MS		= 0x38
+	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_4MS								= 0x08,
+	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_5MS								= 0x10,
+	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_8MS								= 0x18,
+	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_10MS								= 0x20,
+	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_15MS								= 0x28,
+	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_20MS								= 0x30,
+	BNO055_CONF_GYRO_AUTO_SLEEP_DURATION_40MS								= 0x38
 } bno055_gyro_auto_sleep_duration_t;
 
 typedef enum{
-	BNO055_CONF_GYRO_SLEEP_DURATION_2MS				= 0x00,
-	BNO055_CONF_GYRO_SLEEP_DURATION_4MS				= 0x01,
-	BNO055_CONF_GYRO_SLEEP_DURATION_5MS				= 0x02,
-	BNO055_CONF_GYRO_SLEEP_DURATION_8MS				= 0x03,
-	BNO055_CONF_GYRO_SLEEP_DURATION_10MS			= 0x04,
-	BNO055_CONF_GYRO_SLEEP_DURATION_15MS			= 0x05,
-	BNO055_CONF_GYRO_SLEEP_DURATION_18MS			= 0x06,
-	BNO055_CONF_GYRO_SLEEP_DURATION_20MS			= 0x07
+	BNO055_CONF_GYRO_SLEEP_DURATION_2MS										= 0x00,
+	BNO055_CONF_GYRO_SLEEP_DURATION_4MS										= 0x01,
+	BNO055_CONF_GYRO_SLEEP_DURATION_5MS										= 0x02,
+	BNO055_CONF_GYRO_SLEEP_DURATION_8MS										= 0x03,
+	BNO055_CONF_GYRO_SLEEP_DURATION_10MS									= 0x04,
+	BNO055_CONF_GYRO_SLEEP_DURATION_15MS									= 0x05,
+	BNO055_CONF_GYRO_SLEEP_DURATION_18MS									= 0x06,
+	BNO055_CONF_GYRO_SLEEP_DURATION_20MS									= 0x07
 } bno055_gyro_sleep_duration_t;
 
 typedef enum{
-	BNO055_CONF_ACCEL_SLEEP_DURATION_0_5MS			= 0x00,
-	BNO055_CONF_ACCEL_SLEEP_DURATION_1MS			= 0x0C,
-	BNO055_CONF_ACCEL_SLEEP_DURATION_2MS			= 0x0E,
-	BNO055_CONF_ACCEL_SLEEP_DURATION_4MS			= 0x10,
-	BNO055_CONF_ACCEL_SLEEP_DURATION_6MS			= 0x12,
-	BNO055_CONF_ACCEL_SLEEP_DURATION_10MS			= 0x14,
-	BNO055_CONF_ACCEL_SLEEP_DURATION_25MS			= 0x16,
-	BNO055_CONF_ACCEL_SLEEP_DURATION_50MS			= 0x18,
-	BNO055_CONF_ACCEL_SLEEP_DURATION_100MS			= 0x1A,
-	BNO055_CONF_ACCEL_SLEEP_DURATION_500MS			= 0x1C,
-	BNO055_CONF_ACCEL_SLEEP_DURATION_1000MS			= 0x1E
+	BNO055_CONF_ACCEL_SLEEP_DURATION_0_5MS									= 0x00,
+	BNO055_CONF_ACCEL_SLEEP_DURATION_1MS									= 0x0C,
+	BNO055_CONF_ACCEL_SLEEP_DURATION_2MS									= 0x0E,
+	BNO055_CONF_ACCEL_SLEEP_DURATION_4MS									= 0x10,
+	BNO055_CONF_ACCEL_SLEEP_DURATION_6MS									= 0x12,
+	BNO055_CONF_ACCEL_SLEEP_DURATION_10MS									= 0x14,
+	BNO055_CONF_ACCEL_SLEEP_DURATION_25MS									= 0x16,
+	BNO055_CONF_ACCEL_SLEEP_DURATION_50MS									= 0x18,
+	BNO055_CONF_ACCEL_SLEEP_DURATION_100MS									= 0x1A,
+	BNO055_CONF_ACCEL_SLEEP_DURATION_500MS									= 0x1C,
+	BNO055_CONF_ACCEL_SLEEP_DURATION_1000MS									= 0x1E
 } bno055_accel_sleep_duration_t;
 
 typedef enum{
-	BNO055_CONF_ACCEL_SLEEP_MODE_EVTDRIVEN			= 0x00,
-	BNO055_CONF_ACCEL_SLEEP_MODE_SAMPLING			= 0x01
+	BNO055_CONF_ACCEL_SLEEP_MODE_EVTDRIVEN									= 0x00,
+	BNO055_CONF_ACCEL_SLEEP_MODE_SAMPLING									= 0x01
 } bno055_accel_sleep_mode_t;
 
-
 typedef struct{
-	int16_t accelOffsetX;
-    int16_t accelOffsetY;
-    int16_t accelOffsetZ;
-    
-	int16_t magOffsetX;
-    int16_t magOffsetY;
-    int16_t magOffsetZ;
+	int16_t accelOffsetX = 0;
+	int16_t accelOffsetY = 0;
+	int16_t accelOffsetZ = 0;
+	
+	int16_t magOffsetX = 0;
+	int16_t magOffsetY = 0;
+	int16_t magOffsetZ = 0;
 
-    int16_t gyroOffsetX;
-    int16_t gyroOffsetY;
-    int16_t gyroOffsetZ;
+	int16_t gyroOffsetX = 0;
+	int16_t gyroOffsetY = 0;
+	int16_t gyroOffsetZ = 0;
 
-    int16_t accelRadius;
-    int16_t magRadius;
+	int16_t accelRadius = 0;
+	int16_t magRadius = 0;
 } bno055_offsets_t;
 
 typedef struct{
-	uint8_t sys;
-    uint8_t gyro;
-    uint8_t mag;
-	uint8_t accel;
+	uint8_t sys = 0;
+	uint8_t gyro = 0;
+	uint8_t mag = 0;
+	uint8_t accel = 0;
 } bno055_calibration_t;
 
 class BNO055BaseException : public std::exception{
@@ -323,7 +462,7 @@ class BNO055BaseException : public std::exception{
 	std::string _msg;
 	
 	public:
-	BNO055BaseException(std::string message = ";-(, there was an error."){_msg = message;};
+	BNO055BaseException(std::string message = ":-(, an error is occurred."){_msg = message;};
 	virtual const char* what() const throw(){
 		return _msg.c_str();
 	}
@@ -401,150 +540,12 @@ class BNO055WrongOprMode: public BNO055BaseException{
 
 class BNO055{
 	public:
-	// BNO055 Registers(Table 4-1, Pag 51)
-	typedef enum{
-		// PAGE 1
-		BNO055_REG_ACC_CONFIG					= 0x08,
-		BN0055_REG_MAG_CONFIG					= 0x09,
-		BNO055_REG_GYR_CONFIG_0					= 0x0A,
-		BNO055_REG_GYR_CONFIG_1					= 0x0B,
-
-		BNO055_REG_ACC_SLEEP_CONFIG				= 0x0C,
-		BNO055_REG_GYR_SLEEP_CONFIG				= 0x0D,
-
-		BNO055_REG_INT_MSK						= 0x0F,
-		BNO055_REG_INT_EN						= 0x10,
-
-		BNO055_REG_ACC_AM_THRES					= 0x11,
-		BNO055_REG_ACC_INT_SETTINGS				= 0x12,
-		BNO055_REG_ACC_HG_DURATION				= 0x13,
-		BNO055_REG_ACC_HG_THRES					= 0x14,
-		BNO055_REG_ACC_NM_THRES					= 0x15,
-		BNO055_REG_ACC_NM_SET					= 0x16,
-		BNO055_REG_GYR_INT_SETTING				= 0x17,
-		BNO055_REG_GYR_HR_X_SET					= 0x18,
-		BNO055_REG_GYR_DUR_X					= 0x19,
-		BNO055_REG_GYR_HR_Y_SET					= 0x1A,
-		BNO055_REG_GYR_DUR_Y					= 0x1B,
-		BNO055_REG_GYR_HR_Z_SET					= 0x1C,
-		BNO055_REG_GYR_DUR_Z					= 0x1D,
-		BNO055_REG_GYR_AM_THRES					= 0x1E,
-		BNO055_REG_GYR_AM_SET					= 0x1F,
-		
-		BNO055_REG_PAGE_ID						= 0x07,
-		
-		// PAGE 0
-		BNO055_REG_CHIP_ID						= 0x00,
-		BNO055_REG_ACC_ID						= 0x01,
-		BNO055_REG_MAG_ID						= 0x02,
-		BNO055_REG_GYRO_ID						= 0x03,
-		BNO055_REG_SW_REV_ID_LSB				= 0x04,
-		BNO055_REG_SW_REV_ID_MSB				= 0x05,
-		BNO055_REG_BL_REV_ID					= 0x06,
-
-		BNO055_REG_ACC_DATA_X_LSB				= 0x08,
-		BNO055_REG_ACC_DATA_X_MSB				= 0x09,
-		BNO055_REG_ACC_DATA_Y_LSB				= 0x0A,
-		BNO055_REG_ACC_DATA_Y_MSB				= 0x0B,
-		BNO055_REG_ACC_DATA_Z_LSB				= 0x0C,
-		BNO055_REG_ACC_DATA_Z_MSB				= 0x0D,
-
-		BNO055_REG_MAG_DATA_X_LSB				= 0x0E,
-		BNO055_REG_MAG_DATA_X_MSB				= 0x0F,
-		BNO055_REG_MAG_DATA_Y_LSB				= 0x10,
-		BNO055_REG_MAG_DATA_Y_MSB				= 0x11,
-		BNO055_REG_MAG_DATA_Z_LSB				= 0x12,
-		BNO055_REG_MAG_DATA_Z_MSB				= 0x13,
-
-		BNO055_REG_GYR_DATA_X_LSB				= 0x14,
-		BNO055_REG_GYR_DATA_X_MSB				= 0x15,
-		BNO055_REG_GYR_DATA_Y_LSB				= 0x16,
-		BNO055_REG_GYR_DATA_Y_MSB				= 0x17,
-		BNO055_REG_GYR_DATA_Z_LSB				= 0x18,
-		BNO055_REG_GYR_DATA_Z_MSB				= 0x19,
-
-		BNO055_REG_EUL_HEADING_LSB				= 0x1A,
-		BNO055_REG_EUL_HEADING_MSB				= 0x1B,
-		BNO055_REG_EUL_ROLL_LSB					= 0x1C,
-		BNO055_REG_EUL_ROLL_MSB					= 0x1D,
-		BNO055_REG_EUL_PITCH_LSB				= 0x1E,
-		BNO055_REG_EUL_PITCH_MSB				= 0x1F,
-
-		BNO055_REG_QUA_DATA_W_LSB				= 0x20,
-		BNO055_REG_QUA_DATA_W_MSB				= 0x21,
-		BNO055_REG_QUA_DATA_X_LSB				= 0x22,
-		BNO055_REG_QUA_DATA_X_MSB				= 0x23,
-		BNO055_REG_QUA_DATA_Y_LSB				= 0x24,
-		BNO055_REG_QUA_DATA_Y_MSB				= 0x25,
-		BNO055_REG_QUA_DATA_Z_LSB				= 0x26,
-		BNO055_REG_QUA_DATA_Z_MSB				= 0x27,
-
-		BNO055_REG_LIA_DATA_X_LSB				= 0x28,
-		BNO055_REG_LIA_DATA_X_MSB				= 0x29,
-		BNO055_REG_LIA_DATA_Y_LSB				= 0x2A,
-		BNO055_REG_LIA_DATA_Y_MSB				= 0x2B,
-		BNO055_REG_LIA_DATA_Z_LSB				= 0x2C,
-		BNO055_REG_LIA_DATA_Z_MSB				= 0x2D,
-
-		BNO055_REG_GRV_DATA_X_LSB				= 0x2E,
-		BNO055_REG_GRV_DATA_X_MSB				= 0x2F,
-		BNO055_REG_GRV_DATA_Y_LSB				= 0x30,
-		BNO055_REG_GRV_DATA_Y_MSB				= 0x31,
-		BNO055_REG_GRV_DATA_Z_LSB				= 0x32,
-		BNO055_REG_GRV_DATA_Z_MSB				= 0x33,
-
-		BNO055_REG_TEMP							= 0x34,
-
-		BNO055_REG_CALIB_STAT					= 0x35,
-		BNO055_REG_ST_RESULT					= 0x36,
-		BNO055_REG_INT_STA						= 0x37,
-
-		BNO055_REG_SYS_CLK_STAT					= 0x38,
-		BNO055_REG_SYS_STATUS					= 0x39,
-		BNO055_REG_SYS_ERR						= 0x3A,
-
-		BNO055_REG_UNIT_SEL						= 0x3B,
-
-		BNO055_REG_OPR_MODE						= 0x3D,
-		BNO055_REG_PWR_MODE						= 0x3E,
-		BNO055_REG_SYS_TRIGGER					= 0x3F,
-		BNO055_REG_TEMP_SOURCE					= 0x40,
-
-		BNO055_REG_AXIS_MAP_CONFIG				= 0x41,
-		BNO055_REG_AXIS_MAP_SIGN				= 0x42,
-
-		BNO055_REG_ACC_OFFSET_X_LSB				= 0x55,
-		BNO055_REG_ACC_OFFSET_X_MSB				= 0x56, 
-		BNO055_REG_ACC_OFFSET_Y_LSB				= 0x57,
-		BNO055_REG_ACC_OFFSET_Y_MSB				= 0x58,
-		BNO055_REG_ACC_OFFSET_Z_LSB				= 0x59,
-		BNO055_REG_ACC_OFFSET_Z_MSB				= 0x5A,
-
-		BNO055_REG_MAG_OFFSET_X_LSB				= 0x5B,
-		BNO055_REG_MAG_OFFSET_X_MSB				= 0x5C,
-		BNO055_REG_MAG_OFFSET_Y_LSB				= 0x5D,
-		BNO055_REG_MAG_OFFSET_Y_MSB				= 0x5E,
-		BNO055_REG_MAG_OFFSET_Z_LSB				= 0x5F,
-		BNO055_REG_MAG_OFFSET_Z_MSB				= 0x60,
-
-		BNO055_REG_GYR_OFFSET_X_LSB				= 0x61,
-		BNO055_REG_GYR_OFFSET_X_MSB				= 0x62,
-		BNO055_REG_GYR_OFFSET_Y_LSB				= 0x63,
-		BNO055_REG_GYR_OFFSET_Y_MSB				= 0x64,
-		BNO055_REG_GYR_OFFSET_Z_LSB				= 0x65,
-		BNO055_REG_GYR_OFFSET_Z_MSB				= 0x66,
-
-		BNO055_REG_ACC_RADIUS_LSB				= 0x67,
-		BNO055_REG_ACC_RADIUS_MSB				= 0x68,
-
-		BNO055_REG_MAG_RADIUS_LSB				= 0x69,
-		BNO055_REG_MAG_RADIUS_MSB				= 0x6A
-	} bno055_reg_t;
-
 	BNO055(uart_port_t uartPort, gpio_num_t txPin = GPIO_NUM_17, gpio_num_t rxPin = GPIO_NUM_16, gpio_num_t rstPin = GPIO_NUM_MAX, gpio_num_t intPin = GPIO_NUM_MAX);
 
 	void begin();
 	void reset();
+
+	void setPage(uint8_t page, bool forced = false);
 
 	void setOpMode(bno055_opmode_t mode, bool forced = false);
 	void setPwrMode(bno055_powermode_t pwrMode);
@@ -552,6 +553,9 @@ class BNO055{
 	void setExtCrystalUse(bool state);
 	void enableExternalCrystal();
 	void disableExternalCrystal();
+
+	bno055_offsets_t getSensorOffsets();
+	void setSensorOffsets(bno055_offsets_t newOffsets);
 	bno055_calibration_t getCalibration();
 	
 	int8_t getTemp();
@@ -563,15 +567,10 @@ class BNO055{
 	bno055_vector_t getVectorLinearAccel();
 	bno055_vector_t getVectorGravity();
 	bno055_quaternion_t getQuaternion();
-
-	bno055_offsets_t getSensorOffsets();
-	void setSensorOffsets(bno055_offsets_t newOffsets);
 	
 	bno055_system_status_t getSystemStatus();
 	bno055_self_test_result_t getSelfTestResult();
 	bno055_system_error_t getSystemError();
-
-	void setPage(uint8_t page, bool forced = false);
 
 	void setAxisRemap(bno055_axis_config_t config = BNO055_REMAP_CONFIG_P1, bno055_axis_sign_t sign = BNO055_REMAP_SIGN_P1);
 	void setUnits(bno055_accel_unit_t accel = BNO055_UNIT_ACCEL_MS2, bno055_angular_rate_unit_t angularRate = BNO055_UNIT_ANGULAR_RATE_RPS, bno055_euler_unit_t euler = BNO055_UNIT_EULER_DEGREES, bno055_temperature_unit_t temp = BNO055_UNIT_TEMP_C, bno055_data_output_format_t format = BNO055_DATA_FORMAT_ANDROID);
@@ -582,9 +581,6 @@ class BNO055{
 	
 	void setGyroSleepConfig(bno055_gyro_auto_sleep_duration_t autoSleepDuration, bno055_gyro_sleep_duration_t sleepDuration);
 	void setAccelSleepConfig(bno055_accel_sleep_duration_t sleepDuration, bno055_accel_sleep_mode_t sleepMode);
-
-	void enableInterrupt(uint8_t flag, bool useInterruptPin=true);
-	void disableInterrupt(uint8_t flag);
 
 	void enableAccelSlowMotionInterrupt(bool useInterruptPin=true);
 	void setAccelSlowMotionInterrupt(uint8_t threshold, uint8_t duration, bool xAxis=true, bool yAxis=true, bool zAxis=true);
@@ -617,7 +613,6 @@ class BNO055{
 
 	void readLen(bno055_reg_t reg, uint8_t len, uint8_t *buffer, uint32_t timoutMS = DEFAULT_UART_TIMEOUT_MS);
 	void read8(bno055_reg_t reg, uint8_t *val, uint32_t timoutMS = DEFAULT_UART_TIMEOUT_MS);
-
 	void writeLen(bno055_reg_t reg, uint8_t *data, uint8_t len, uint32_t timoutMS = DEFAULT_UART_TIMEOUT_MS);
 	void write8(bno055_reg_t reg, uint8_t val, uint32_t timoutMS = DEFAULT_UART_TIMEOUT_MS);
 
@@ -652,8 +647,9 @@ class BNO055{
 		} bno055_vector_type_t;
 
 		bno055_vector_t getVector(bno055_vector_type_t vec);
-		
-		
+		void enableInterrupt(uint8_t flag, bool useInterruptPin=true);
+		void disableInterrupt(uint8_t flag);
+			
 		const uart_config_t uart_config = {
 			.baud_rate = 115200,
 			.data_bits = UART_DATA_8_BITS,
@@ -662,7 +658,7 @@ class BNO055{
 			.flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
 			.rx_flow_ctrl_thresh = 0,
 			.use_ref_tick = false
-    	};
+		};
 };
 
 #endif
