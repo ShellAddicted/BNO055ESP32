@@ -64,7 +64,7 @@ extern "C" void app_main(){
 
 	int8_t temperature = bno.getTemp();
 	ESP_LOGI(TAG, "TEMP: %d°C", temperature);
-    
+	
 	while (1){
 		if (bno.interruptFlag == true){
 			//See bno055_interrupts_status_t for more details.
@@ -79,7 +79,7 @@ extern "C" void app_main(){
 			bno.clearInterruptPin(); //don't forget to place this.
 		}
 		try{
-            //Calibration 3 = fully calibrated, 0 = uncalibrated
+			//Calibration 3 = fully calibrated, 0 = uncalibrated
 			bno055_calibration_t cal = bno.getCalibration();
 			bno055_vector_t v = bno.getVectorEuler();
 			ESP_LOGI(TAG, "Euler: X: %.1f Y: %.1f Z: %.1f || Calibration SYS: %u GYRO: %u ACC:%u MAG:%u", v.x, v.y, v.z, cal.sys, cal.gyro, cal.accel, cal.mag);

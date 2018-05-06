@@ -43,21 +43,21 @@ extern "C" void app_main(){
 		return;
 	}
 
-    while (1){
+	while (1){
 		try{
-            //Calibration 3 = fully calibrated, 0 = uncalibrated
+			//Calibration 3 = fully calibrated, 0 = uncalibrated
 			bno055_calibration_t cal = bno.getCalibration();
 			bno055_vector_t v = bno.getVectorEuler();
 			ESP_LOGI(TAG, "Euler: X: %.1f Y: %.1f Z: %.1f || Calibration SYS: %u GYRO: %u ACC:%u MAG:%u", v.x, v.y, v.z, cal.sys, cal.gyro, cal.accel, cal.mag);
-            if (cal.gyro == 3 && cal.accel == 3 && cal.mag == 3){
-                ESP_LOGI(TAG, "Fully Calibrated.");
-                bno.setOprModeConfig(); //Change OPR_MODE
-                bno055_offsets_t txt = bno.getSensorOffsets(); //NOTE: this must be executed in CONFIG_MODE
-                ESP_LOGI(TAG, "\nOffsets:\nAccel: X:%d, Y:%d, Z:%d;\nMag: X:%d, Y:%d, Z:%d;\nGyro: X:%d, Y:%d, Z:%d;\nAccelRadius: %d;\nMagRadius: %d;\n", txt.accelOffsetX, txt.accelOffsetY, txt.accelOffsetZ, txt.magOffsetX, txt.magOffsetY, txt.magOffsetZ, txt.gyroOffsetX, txt.gyroOffsetY, txt.gyroOffsetZ, txt.accelRadius, txt.magRadius);
+			if (cal.gyro == 3 && cal.accel == 3 && cal.mag == 3){
+				ESP_LOGI(TAG, "Fully Calibrated.");
+				bno.setOprModeConfig(); //Change OPR_MODE
+				bno055_offsets_t txt = bno.getSensorOffsets(); //NOTE: this must be executed in CONFIG_MODE
+				ESP_LOGI(TAG, "\nOffsets:\nAccel: X:%d, Y:%d, Z:%d;\nMag: X:%d, Y:%d, Z:%d;\nGyro: X:%d, Y:%d, Z:%d;\nAccelRadius: %d;\nMagRadius: %d;\n", txt.accelOffsetX, txt.accelOffsetY, txt.accelOffsetZ, txt.magOffsetX, txt.magOffsetY, txt.magOffsetZ, txt.gyroOffsetX, txt.gyroOffsetY, txt.gyroOffsetZ, txt.accelRadius, txt.magRadius);
 				ESP_LOGI(TAG,"Store this values, place them using setSensorOffsets() after every reset of the BNO055 to avoid the calibration process, unluckily MAG requires to be calibrated after every reset, for more information consult datasheet.");
-                break;
-            }
-        }
+				break;
+			}
+		}
 		catch (BNO055BaseException& ex){
 			ESP_LOGE(TAG, "Error: %s", ex.what());
 			return;
@@ -65,6 +65,6 @@ extern "C" void app_main(){
 		catch (std::exception &ex){
 			ESP_LOGE(TAG, "Error: %s", ex.what());
 		}
-        vTaskDelay(100 / portTICK_PERIOD_MS); // in fusion mode output rate is 100hz
-    }
+		vTaskDelay(100 / portTICK_PERIOD_MS); // in fusion mode output rate is 100hz
+	}
 }
