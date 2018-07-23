@@ -575,6 +575,9 @@ class BNO055{
 	bno055_vector_t getVectorGravity();
 	bno055_quaternion_t getQuaternion();
 	
+	int16_t getSWRevision();
+	uint8_t getBootloaderRevision();
+
 	bno055_system_status_t getSystemStatus();
 	bno055_self_test_result_t getSelfTestResult();
 	bno055_system_error_t getSystemError();

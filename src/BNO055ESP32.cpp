@@ -343,6 +343,20 @@ void BNO055::disableExternalCrystal(){
 	setExtCrystalUse(false);
 }
 
+int16_t BNO055::getSWRevision(){
+	setPage(0);
+	uint8_t buffer[2];
+	readLen(BNO055_REG_SW_REV_ID_LSB, 2, buffer);
+	return (((int16_t)buffer[0]) | (((int16_t)buffer[1]) << 8));
+}
+
+uint8_t BNO055::getBootloaderRevision(){
+	setPage(0);
+	uint8_t tmp;
+	read8(BNO055_REG_BL_REV_ID, &tmp);
+	return tmp;
+}
+
 bno055_system_status_t BNO055::getSystemStatus(){
 	setPage(0);
 	uint8_t tmp;
