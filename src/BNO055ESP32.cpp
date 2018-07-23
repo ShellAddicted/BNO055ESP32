@@ -71,7 +71,7 @@ std::exception BNO055::getException(uint8_t errcode){
 	}
 }
 
-void BNO055::readLen(bno055_reg_t reg, uint8_t len, uint8_t *buffer, uint32_t timoutMS){
+void BNO055::readLen(bno055_reg_t reg, uint8_t len, uint8_t *buffer, uint32_t timeoutMS){
 	uint8_t res = 0;
 	memset(buffer, 0, len);
 	
@@ -80,8 +80,11 @@ void BNO055::readLen(bno055_reg_t reg, uint8_t len, uint8_t *buffer, uint32_t ti
 	cmd[1] = 0x01; // Read
 	cmd[2] = reg & 0xFF;
 	cmd[3] = len & 0xFF; // len in bytes
+	uint8_t *data = NULL;
 
-	uint8_t *data = (uint8_t *) malloc(len+2);
+	if (timeoutMS > 0){ // if we are expecting ack then allocate *data
+		data = (uint8_t *) malloc(len+2);
+	}
 
 	for (int round = 1; round <= UART_ROUND_NUM; round++){
 		#ifndef BNO055_DEBUG_OFF
@@ -96,15 +99,14 @@ void BNO055::readLen(bno055_reg_t reg, uint8_t len, uint8_t *buffer, uint32_t ti
 		ESP_LOG_BUFFER_HEXDUMP(BNO055_LOG_TAG, (const char*) cmd, 4, ESP_LOG_DEBUG);
 		#endif
 
-		if (timoutMS <= 0){
+		if (timeoutMS == 0){
 			free(cmd);
-			free(data);
-			return; // Do no expect ACK
+			return; // Do not expect ACK
 		}
 		// else expect ACK
 		
 		// Read data from the UART
-		int rxBytes = uart_read_bytes(_uartPort, data, (len+2), timoutMS / portTICK_RATE_MS);
+		int rxBytes = uart_read_bytes(_uartPort, data, (len+2), timeoutMS / portTICK_RATE_MS);
 		if (rxBytes > 0) {
 			//data[rxBytes] = 0;
 
@@ -154,7 +156,7 @@ void BNO055::readLen(bno055_reg_t reg, uint8_t len, uint8_t *buffer, uint32_t ti
 	}
 }
 
-void BNO055::writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, uint32_t timoutMS){
+void BNO055::writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, uint32_t timeoutMS){
 	uint8_t res = 0;
 
 	uint8_t *cmd = (uint8_t *) malloc(len+4);
@@ -163,8 +165,11 @@ void BNO055::writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, uint32
 	cmd[2] = reg & 0xFF;
 	cmd[3] = len & 0xFF; // len in bytes
 	memcpy(cmd+4, data2write, len);
+	uint8_t *data = NULL;
 	
-	uint8_t *data = (uint8_t *) malloc(2);
+	if (timeoutMS > 0){ // if we are expecting ack allocate *data
+		data = (uint8_t *) malloc(2);
+	}
 
 	// Read data from the UART
 	for (int round = 1; round <= UART_ROUND_NUM; round++){
@@ -181,14 +186,13 @@ void BNO055::writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, uint32
 		ESP_LOG_BUFFER_HEXDUMP(BNO055_LOG_TAG, (const char*) cmd,(len+4), ESP_LOG_DEBUG);
 		#endif
 
-		if (timoutMS <= 0){
+		if (timeoutMS == 0){
 			free(cmd);
-			free(data);
-			return; // do not expect ACK
+			return; // Do not expect ACK
 		}
 		//else expect ACK
 		
-		int rxBytes = uart_read_bytes(_uartPort, data, 2, timoutMS / portTICK_RATE_MS);
+		int rxBytes = uart_read_bytes(_uartPort, data, 2, timeoutMS / portTICK_RATE_MS);
 		if (rxBytes > 0) {
 			res = data[1]; // in case of error, this will be the errorCode.
 			//data[rxBytes] = 0;
@@ -235,12 +239,12 @@ void BNO055::writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, uint32
 	}
 }
 
-void BNO055::read8(bno055_reg_t reg, uint8_t *val, uint32_t timoutMS){
-	readLen(reg, 1, val, timoutMS);
+void BNO055::read8(bno055_reg_t reg, uint8_t *val, uint32_t timeoutMS){
+	readLen(reg, 1, val, timeoutMS);
 }
 
-void BNO055::write8(bno055_reg_t reg, uint8_t val, uint32_t timoutMS){
-	writeLen(reg, &val, 1, timoutMS);
+void BNO055::write8(bno055_reg_t reg, uint8_t val, uint32_t timeoutMS){
+	writeLen(reg, &val, 1, timeoutMS);
 }
 
 void BNO055::setPage(uint8_t page, bool forced){
