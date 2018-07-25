@@ -65,6 +65,10 @@ extern "C" void app_main(){
 	int8_t temperature = bno.getTemp();
 	ESP_LOGI(TAG, "TEMP: %d°C", temperature);
 
+	int16_t sw = bno.getSWRevision();
+	uint8_t bl_rev = bno.getBootloaderRevision();
+	ESP_LOGI(TAG, "SW rev: %d, bootloader rev: %u", sw, bl_rev);
+
 	bno055_self_test_result_t res = bno.getSelfTestResult();
 	ESP_LOGI(TAG, "Self-Test Results: MCU: %u, GYR:%u, MAG:%u, ACC: %u",res.mcuState,res.gyrState,res.magState,res.accState);
 	
