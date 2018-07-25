@@ -64,6 +64,9 @@ extern "C" void app_main(){
 
 	int8_t temperature = bno.getTemp();
 	ESP_LOGI(TAG, "TEMP: %d°C", temperature);
+
+	bno055_self_test_result_t res = bno.getSelfTestResult();
+	ESP_LOGI(TAG, "Self-Test Results: MCU: %u, GYR:%u, MAG:%u, ACC: %u",res.mcuState,res.gyrState,res.magState,res.accState);
 	
 	while (1){
 		try{
