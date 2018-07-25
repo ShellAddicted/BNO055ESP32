@@ -372,6 +372,7 @@ bno055_self_test_result_t BNO055::getSelfTestResult(){
 	res.mcuState = (tmp >> 3) & 0x01;
 	res.gyrState = (tmp >> 2) & 0x01;
 	res.magState = (tmp >> 1) & 0x01;
+	res.accState = (tmp >> 0) & 0x01;
 	return res;
 }
 

@@ -262,6 +262,7 @@ typedef struct{
 	uint8_t mcuState = 0;
 	uint8_t gyrState = 0;
 	uint8_t magState = 0;
+	uint8_t accState = 0;
 } bno055_self_test_result_t;
 
 typedef struct{
