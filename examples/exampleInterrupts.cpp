@@ -95,6 +95,6 @@ extern "C" void app_main(){
 		catch (std::exception &ex){
 			ESP_LOGE(TAG, "Error: %s", ex.what());
 		}
-		vTaskDelay(100 / portTICK_PERIOD_MS); // in fusion mode output rate is 100hz
+		vTaskDelay(100 / portTICK_PERIOD_MS); // in fusion mode max output rate is 100hz (actual rate: 100ms (10hz))
 	}
 }
