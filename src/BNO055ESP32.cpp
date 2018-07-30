@@ -75,15 +75,19 @@ void BNO055::readLen(bno055_reg_t reg, uint8_t len, uint8_t *buffer, uint32_t ti
 	uint8_t res = 0;
 	memset(buffer, 0, len);
 	
-	uint8_t *cmd = (uint8_t*) malloc(4);
+	uint8_t cmd[4];
 	cmd[0] = 0xAA; // Start Byte
 	cmd[1] = 0x01; // Read
 	cmd[2] = reg & 0xFF;
 	cmd[3] = len & 0xFF; // len in bytes
 	uint8_t *data = NULL;
 
-	if (timeoutMS > 0){ // if we are expecting ack then allocate *data
+	if (timeoutMS > 0){ // if we are expecting ack/response then allocate *data
 		data = (uint8_t *) malloc(len+2);
+		if (data == NULL){
+			//malloc failed
+			throw std::bad_alloc();
+		}
 	}
 
 	for (int round = 1; round <= UART_ROUND_NUM; round++){
@@ -100,15 +104,13 @@ void BNO055::readLen(bno055_reg_t reg, uint8_t len, uint8_t *buffer, uint32_t ti
 		#endif
 
 		if (timeoutMS == 0){
-			free(cmd);
-			return; // Do not expect ACK
+			return; // Do not expect ACK/response
 		}
-		// else expect ACK
+		// else expect ACK/response
 		
 		// Read data from the UART
 		int rxBytes = uart_read_bytes(_uartPort, data, (len+2), timeoutMS / portTICK_RATE_MS);
 		if (rxBytes > 0) {
-			//data[rxBytes] = 0;
 
 			#ifndef BNO055_DEBUG_OFF
 			ESP_LOGD(BNO055_LOG_TAG, "(RL) Read %d bytes", rxBytes);
@@ -118,38 +120,32 @@ void BNO055::readLen(bno055_reg_t reg, uint8_t len, uint8_t *buffer, uint32_t ti
 			res = data[1]; // in case of error, this will be the errorCode.
 
 			if (round == UART_ROUND_NUM){
-				free(cmd);
 				free(data);
 				throw getException(res);
 			}
 			
 			else if (data[0] == 0xBB){ // OK
 				memcpy(buffer, data+2, len); // remove header bytes & Write back response
-				free(cmd);
 				free(data);
 				break;
 			}
 
 			else if (data[0] == 0xEE){ //Error
 				if (data[1] == 0x07 || data[1] == 0x02 || data[1] == 0x0A){
-					//ESP_LOGE(BNO055_LOG_TAG, "(RL) Error: %d, Resending command...", res);
 					continue;
 				}
 				ESP_LOGE(BNO055_LOG_TAG, "(RL) Error: %d", res);
-				free(cmd);
 				free(data);
 				throw getException(res);
 			}
 
 			else{
 				ESP_LOGE(BNO055_LOG_TAG, "(RL) Error: %d (BNO55_UNKNOW_ERROR)", (int)res);
-				free(cmd);
 				free(data);             
 				throw getException(res);
 			}
 		}
 		else{
-			free(cmd);
 			free(data);
 			throw BNO055UartTimeout();
 		}
@@ -160,16 +156,16 @@ void BNO055::writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, uint32
 	uint8_t res = 0;
 
 	uint8_t *cmd = (uint8_t *) malloc(len+4);
+	if (cmd == NULL){
+		//malloc failed
+		throw std::bad_alloc();
+	}
 	cmd[0] = 0xAA; // Start Byte
 	cmd[1] = 0x00; // Write
 	cmd[2] = reg & 0xFF;
 	cmd[3] = len & 0xFF; // len in bytes
 	memcpy(cmd+4, data2write, len);
-	uint8_t *data = NULL;
-	
-	if (timeoutMS > 0){ // if we are expecting ack allocate *data
-		data = (uint8_t *) malloc(2);
-	}
+	uint8_t data[2];
 
 	// Read data from the UART
 	for (int round = 1; round <= UART_ROUND_NUM; round++){
@@ -195,7 +191,6 @@ void BNO055::writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, uint32
 		int rxBytes = uart_read_bytes(_uartPort, data, 2, timeoutMS / portTICK_RATE_MS);
 		if (rxBytes > 0) {
 			res = data[1]; // in case of error, this will be the errorCode.
-			//data[rxBytes] = 0;
 			
 			#ifndef BNO055_DEBUG_OFF
 			ESP_LOGD(BNO055_LOG_TAG, "(WL) Read %d bytes", rxBytes); //DEBUG
@@ -204,7 +199,6 @@ void BNO055::writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, uint32
 
 			if (round == UART_ROUND_NUM){
 				free(cmd);
-				free(data);
 				throw getException(res);
 			}
 
@@ -214,7 +208,6 @@ void BNO055::writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, uint32
 					continue;
 				}
 				free(cmd);
-				free(data);
 				if (res == 0x01){ // OK
 					break;
 				}
@@ -226,14 +219,12 @@ void BNO055::writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, uint32
 
 			else{
 				free(cmd);
-				free(data);
 				ESP_LOGE(BNO055_LOG_TAG, "(WL) Error: %d (BNO55_UNKNOW_ERROR)", (int)res);
 				throw getException(res);
 			}
 		}
 		else{
 			free(cmd);
-			free(data);
 			throw BNO055UartTimeout();
 		}
 	}
@@ -425,17 +416,11 @@ void BNO055::reset(){
 
 bno055_vector_t BNO055::getVector(bno055_vector_type_t vec){
 	setPage(0);
-	uint8_t *buffer = (uint8_t*) malloc(6);
-  
+	uint8_t buffer[6];
+	
 	/* Read (6 bytes) */
-	try{
-		readLen((bno055_reg_t)vec, 6, buffer);
-	}
-	catch(std::exception exc){
-		free(buffer);
-		throw exc;
-	}
-
+	readLen((bno055_reg_t)vec, 6, buffer);
+  
 	double scale = 1;
 
 	if (vec == BNO055_VECTOR_MAGNETOMETER){
@@ -457,7 +442,6 @@ bno055_vector_t BNO055::getVector(bno055_vector_type_t vec){
 	int16_t x = ((int16_t)buffer[0]) | (((int16_t)buffer[1]) << 8);
 	int16_t y = ((int16_t)buffer[2]) | (((int16_t)buffer[3]) << 8);
 	int16_t z = ((int16_t)buffer[4]) | (((int16_t)buffer[5]) << 8);
-	free(buffer);
 	
 	bno055_vector_t xyz;
 	xyz.x = (double)x/scale;
@@ -491,22 +475,16 @@ bno055_vector_t BNO055::getVectorGravity(){
 }
 
 bno055_quaternion_t BNO055::getQuaternion(){
-	uint8_t* buffer = (uint8_t*) malloc(8);
+	uint8_t buffer[8];
 	double scale = 1<<14;
-	try{
-		/* Read quat data (8 bytes) */
-		readLen(BNO055_REG_QUA_DATA_W_LSB, 8, buffer);
-	}
-	catch (std::exception exc){
-		free(buffer);
-		throw exc;
-	}
+	/* Read quat data (8 bytes) */
+	readLen(BNO055_REG_QUA_DATA_W_LSB, 8, buffer);
+	
 	bno055_quaternion_t wxyz;
 	wxyz.w = ((((uint16_t)buffer[1]) << 8) | ((uint16_t)buffer[0]))/scale;
 	wxyz.x = ((((uint16_t)buffer[3]) << 8) | ((uint16_t)buffer[2]))/scale;
 	wxyz.y = ((((uint16_t)buffer[5]) << 8) | ((uint16_t)buffer[4]))/scale;
 	wxyz.z = ((((uint16_t)buffer[7]) << 8) | ((uint16_t)buffer[6]))/scale;
-	free(buffer);
 	return wxyz;
 }
 
@@ -521,8 +499,9 @@ bno055_offsets_t BNO055::getSensorOffsets(){
 		+/-8g  = +/- 8000 mg
 		+/-1g = +/- 16000 mg
 	*/
-	uint8_t* buffer = (uint8_t*) malloc(22);
+	uint8_t buffer[22];
 	readLen(BNO055_REG_ACC_OFFSET_X_LSB, 22, buffer);
+	
 	bno055_offsets_t sensorOffsets;
 	sensorOffsets.accelOffsetX = (buffer[0]) | (buffer[1] << 8);
 	sensorOffsets.accelOffsetY = (buffer[2]) | (buffer[3] << 8);
