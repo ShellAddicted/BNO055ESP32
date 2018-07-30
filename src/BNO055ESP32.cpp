@@ -115,22 +115,17 @@ void BNO055::readLen(bno055_reg_t reg, uint8_t len, uint8_t *buffer, uint32_t ti
 			ESP_LOGD(BNO055_LOG_TAG, "(RL) Read %d bytes", rxBytes);
 			ESP_LOG_BUFFER_HEXDUMP(BNO055_LOG_TAG, data, rxBytes, ESP_LOG_DEBUG);
 			#endif
-
-			res = data[1]; // in case of error, this will be the errorCode.
-
-			if (round == UART_ROUND_NUM){
-				free(data);
-				throw getException(res);
-			}
 			
-			else if (data[0] == 0xBB){ // OK
+			if (data[0] == 0xBB){ // OK
 				memcpy(buffer, data+2, len); // remove header bytes & Write back response
 				free(data);
 				break;
 			}
 
 			else if (data[0] == 0xEE){ //Error
-				if (data[1] == 0x07 || data[1] == 0x02 || data[1] == 0x0A){
+				res = data[1];
+				
+				if ((res == 0x07 || res == 0x02 || res == 0x0A) && (round < UART_ROUND_NUM)){
 					continue;
 				}
 				ESP_LOGE(BNO055_LOG_TAG, "(RL) Error: %d", res);
@@ -139,9 +134,9 @@ void BNO055::readLen(bno055_reg_t reg, uint8_t len, uint8_t *buffer, uint32_t ti
 			}
 
 			else{
-				ESP_LOGE(BNO055_LOG_TAG, "(RL) Error: %d (BNO55_UNKNOW_ERROR)", (int)res);
 				free(data);             
-				throw getException(res);
+				ESP_LOGE(BNO055_LOG_TAG, "(RL) Error: (BNO55_UNKNOW_ERROR)");
+				throw BNO055UnknowError();
 			}
 		}
 		else{
@@ -152,8 +147,6 @@ void BNO055::readLen(bno055_reg_t reg, uint8_t len, uint8_t *buffer, uint32_t ti
 }
 
 void BNO055::writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, uint32_t timeoutMS){
-	uint8_t res = 0;
-
 	uint8_t *cmd = (uint8_t *) malloc(len+4);
 	if (cmd == NULL){
 		//malloc failed
@@ -164,6 +157,7 @@ void BNO055::writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, uint32
 	cmd[2] = reg & 0xFF;
 	cmd[3] = len & 0xFF; // len in bytes
 	memcpy(cmd+4, data2write, len);
+
 	uint8_t data[2];
 
 	// Read data from the UART
@@ -180,50 +174,40 @@ void BNO055::writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, uint32
 		#ifndef BNO055_DEBUG_OFF
 		ESP_LOG_BUFFER_HEXDUMP(BNO055_LOG_TAG, (const char*) cmd,(len+4), ESP_LOG_DEBUG);
 		#endif
+		free(cmd);
 
 		if (timeoutMS == 0){
-			free(cmd);
-			return; // Do not expect ACK
+			return; // Do not expect ACK/response
 		}
-		//else expect ACK
+		//else expect ACK/response
 		
 		int rxBytes = uart_read_bytes(_uartPort, data, 2, timeoutMS / portTICK_RATE_MS);
 		if (rxBytes > 0) {
-			res = data[1]; // in case of error, this will be the errorCode.
 			
 			#ifndef BNO055_DEBUG_OFF
 			ESP_LOGD(BNO055_LOG_TAG, "(WL) Read %d bytes", rxBytes); //DEBUG
 			ESP_LOG_BUFFER_HEXDUMP(BNO055_LOG_TAG, (const char*) data,rxBytes, ESP_LOG_DEBUG);
 			#endif
 
-			if (round == UART_ROUND_NUM){
-				free(cmd);
-				throw getException(res);
-			}
-
-			else if (data[0] == 0xEE){
-				if (data[1] == 0x07 || data[1] == 0x03 || data[1] == 0x06|| data[1] == 0x0A){
-					//ESP_LOGE(BNO055_LOG_TAG, "(WL) Error: %d, resending command...", (int)data[1]);
-					continue;
-				}
-				free(cmd);
-				if (res == 0x01){ // OK
+			if (data[0] == 0xEE){
+				if (data[1] == 0x01){ //OK
 					break;
 				}
-				else{
-					ESP_LOGE(BNO055_LOG_TAG, "(WL) Error: %d.", (int)res);
-					throw getException(res);
+				else if ((data[1] == 0x07 || data[1] == 0x03 || data[1] == 0x06|| data[1] == 0x0A) && (round < UART_ROUND_NUM)){ // TRY AGAIN
+					continue;
+				}
+				else{ //Error :-(
+					ESP_LOGE(BNO055_LOG_TAG, "(WL) Error: %d.", (int)data[1]);
+					throw getException(data[1]);
 				}
 			}
 
 			else{
-				free(cmd);
-				ESP_LOGE(BNO055_LOG_TAG, "(WL) Error: %d (BNO55_UNKNOW_ERROR)", (int)res);
-				throw getException(res);
+				ESP_LOGE(BNO055_LOG_TAG, "(WL) Error: (BNO55_UNKNOW_ERROR)");
+				throw BNO055UnknowError();
 			}
 		}
 		else{
-			free(cmd);
 			throw BNO055UartTimeout();
 		}
 	}
