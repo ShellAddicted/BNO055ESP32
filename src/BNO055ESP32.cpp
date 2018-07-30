@@ -73,7 +73,6 @@ std::exception BNO055::getException(uint8_t errcode){
 
 void BNO055::readLen(bno055_reg_t reg, uint8_t len, uint8_t *buffer, uint32_t timeoutMS){
 	uint8_t res = 0;
-	memset(buffer, 0, len);
 	
 	uint8_t cmd[4];
 	cmd[0] = 0xAA; // Start Byte
