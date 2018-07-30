@@ -623,7 +623,7 @@ class BNO055{
 
 	std::exception getException(uint8_t errcode);
 
-	void readLen(bno055_reg_t reg, uint8_t len, uint8_t *buffer, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
+	void readLen(bno055_reg_t reg, uint8_t *buffer, uint8_t len, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
 	void read8(bno055_reg_t reg, uint8_t *val, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
 	void writeLen(bno055_reg_t reg, uint8_t *data, uint8_t len, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
 	void write8(bno055_reg_t reg, uint8_t val, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);

@@ -71,7 +71,7 @@ std::exception BNO055::getException(uint8_t errcode){
 	}
 }
 
-void BNO055::readLen(bno055_reg_t reg, uint8_t len, uint8_t *buffer, uint32_t timeoutMS){
+void BNO055::readLen(bno055_reg_t reg, uint8_t *buffer, uint8_t len, uint32_t timeoutMS){
 	uint8_t res = 0;
 	
 	uint8_t cmd[4];
@@ -214,7 +214,7 @@ void BNO055::writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, uint32
 }
 
 void BNO055::read8(bno055_reg_t reg, uint8_t *val, uint32_t timeoutMS){
-	readLen(reg, 1, val, timeoutMS);
+	readLen(reg, val, 1, timeoutMS);
 }
 
 void BNO055::write8(bno055_reg_t reg, uint8_t val, uint32_t timeoutMS){
@@ -320,7 +320,7 @@ void BNO055::disableExternalCrystal(){
 int16_t BNO055::getSWRevision(){
 	setPage(0);
 	uint8_t buffer[2];
-	readLen(BNO055_REG_SW_REV_ID_LSB, 2, buffer);
+	readLen(BNO055_REG_SW_REV_ID_LSB, buffer, 2);
 	return (int16_t)((buffer[1] << 8) | buffer[0]);
 }
 
@@ -402,7 +402,7 @@ bno055_vector_t BNO055::getVector(bno055_vector_type_t vec){
 	uint8_t buffer[6];
 	
 	/* Read (6 bytes) */
-	readLen((bno055_reg_t)vec, 6, buffer);
+	readLen((bno055_reg_t)vec, buffer, 6);
   
 	double scale = 1;
 
@@ -458,7 +458,7 @@ bno055_quaternion_t BNO055::getQuaternion(){
 	uint8_t buffer[8];
 	double scale = 1<<14;
 	/* Read quat data (8 bytes) */
-	readLen(BNO055_REG_QUA_DATA_W_LSB, 8, buffer);
+	readLen(BNO055_REG_QUA_DATA_W_LSB, buffer, 8);
 	
 	bno055_quaternion_t wxyz;
 	wxyz.w = (int16_t)((buffer[1] << 8) | buffer[0])/scale;
@@ -481,7 +481,7 @@ bno055_offsets_t BNO055::getSensorOffsets(){
 		+/-1g = +/- 16000 mg
 	*/
 	uint8_t buffer[22];
-	readLen(BNO055_REG_ACC_OFFSET_X_LSB, 22, buffer);
+	readLen(BNO055_REG_ACC_OFFSET_X_LSB, buffer, 22);
 	
 	bno055_offsets_t sensorOffsets;
 	sensorOffsets.accelOffsetX = ((buffer[1] << 8) | buffer[0]);
@@ -576,7 +576,7 @@ void BNO055::enableInterrupt(uint8_t flag, bool useInterruptPin){
 	uint8_t tmp[2];
 	setPage(1);
 	
-	readLen(BNO055_REG_INT_EN, 2, tmp);
+	readLen(BNO055_REG_INT_EN, tmp, 2);
 	tmp[0] |= flag;
 	tmp[1] = (useInterruptPin == true) ? (tmp[1] | flag) : (tmp[1] & ~flag);
 	writeLen(BNO055_REG_INT_EN, tmp, 2); // update
@@ -605,7 +605,7 @@ void BNO055::setAccelSlowMotionInterrupt(uint8_t threshold, uint8_t duration, bo
 	tmp[1] = ((duration << 1) | 0x00);
 	writeLen(BNO055_REG_ACC_NM_THRES, tmp, 2);
 	
-	readLen(BNO055_REG_ACC_INT_SETTINGS, 1, tmp); //read the current value to avoid overwrite of other bits
+	readLen(BNO055_REG_ACC_INT_SETTINGS, tmp, 1); //read the current value to avoid overwrite of other bits
 	tmp[0] = (xAxis == true) ? (tmp[0] | 0x04) : (tmp[0] & ~0x04);
 	tmp[0] = (yAxis == true) ? (tmp[0] | 0x08) : (tmp[0] & ~0x08);
 	tmp[0] = (zAxis == true) ? (tmp[0] | 0x10) : (tmp[0] & ~0x10);
@@ -631,7 +631,7 @@ void BNO055::setAccelNoMotionInterrupt(uint8_t threshold, uint8_t duration, bool
 	tmp[1] = ((duration << 1) | 0x01);
 	writeLen(BNO055_REG_ACC_NM_THRES, tmp, 2);
 	
-	readLen(BNO055_REG_ACC_INT_SETTINGS, 1, tmp);
+	readLen(BNO055_REG_ACC_INT_SETTINGS, tmp, 1);
 	tmp[0] = (xAxis == true) ? (tmp[0] | 0x04) : (tmp[0] & ~0x04);
 	tmp[0] = (yAxis == true) ? (tmp[0] | 0x08) : (tmp[0] & ~0x08);
 	tmp[0] = (zAxis == true) ? (tmp[0] | 0x10) : (tmp[0] & ~0x10);
@@ -653,7 +653,7 @@ void BNO055::setAccelAnyMotionInterrupt(uint8_t threshold, uint8_t duration, boo
 	uint8_t tmp[2];
 	setPage(1);
 	tmp[0] = threshold;
-	readLen(BNO055_REG_ACC_INT_SETTINGS, 1, tmp+1);
+	readLen(BNO055_REG_ACC_INT_SETTINGS, tmp+1, 1);
 	tmp[1] |= (duration & 0x03);
 	tmp[1] = (xAxis == true) ? (tmp[1] | 0x04) : (tmp[1] & ~0x04);
 	tmp[1] = (yAxis == true) ? (tmp[1] | 0x08) : (tmp[1] & ~0x08);
@@ -675,7 +675,7 @@ void BNO055::setAccelHighGInterrupt(uint8_t threshold, uint8_t duration, bool xA
 	}
 	uint8_t tmp[3];
 	setPage(1);
-	readLen(BNO055_REG_ACC_INT_SETTINGS, 1, tmp);
+	readLen(BNO055_REG_ACC_INT_SETTINGS, tmp, 1);
 	tmp[0] = (xAxis == true) ? (tmp[0] | 0x20) : (tmp[0] & ~0x20);
 	tmp[0] = (yAxis == true) ? (tmp[0] | 0x40) : (tmp[0] & ~0x40);
 	tmp[0] = (zAxis == true) ? (tmp[0] | 0x80) : (tmp[0] & ~0x80);
@@ -703,7 +703,7 @@ void BNO055::setGyroAnyMotionInterrupt(uint8_t threshold, uint8_t slopeSamples, 
 	tmp[1] = (tmp[1] << 2) | (threshold & 0x03);
 	writeLen(BNO055_REG_GYR_AM_THRES, tmp, 2);
 
-	readLen(BNO055_REG_GYR_INT_SETTING, 1, tmp);
+	readLen(BNO055_REG_GYR_INT_SETTING, tmp, 1);
 	tmp[0] = (xAxis == true) ? (tmp[0] | 0x01) : (tmp[0] & ~0x01);
 	tmp[0] = (yAxis == true) ? (tmp[0] | 0x02) : (tmp[0] & ~0x02);
 	tmp[0] = (zAxis == true) ? (tmp[0] | 0x04) : (tmp[0] & ~0x04);
@@ -725,7 +725,7 @@ void BNO055::setGyroHRInterrupt(uint8_t thresholdX, uint8_t durationX, uint8_t h
 	}
 	uint8_t tmp[7];
 	setPage(1);
-	readLen(BNO055_REG_GYR_INT_SETTING, 1, tmp);
+	readLen(BNO055_REG_GYR_INT_SETTING, tmp, 1);
 	tmp[0] = (xAxis == true) ? (tmp[0] | 0x01) : (tmp[0] & ~0x01);
 	tmp[0] = (yAxis == true) ? (tmp[0] | 0x02) : (tmp[0] & ~0x02);
 	tmp[0] = (zAxis == true) ? (tmp[0] | 0x04) : (tmp[0] & ~0x04);
