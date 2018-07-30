@@ -382,7 +382,7 @@ void BNO055::reset(){
 		#ifndef BNO055_DEBUG_OFF
 		ESP_LOGD(BNO055_LOG_TAG, "RST -> using serial bus"); //DEBUG
 		#endif
-		write8(BNO055_REG_SYS_TRIGGER, 0x20, 0); //RST (0 timeout because RST is not Acknoledged)
+		write8(BNO055_REG_SYS_TRIGGER, 0x20, 0); //RST (0 timeout because RST is not Acknowledged)
 	}
 	else{
 		#ifndef BNO055_DEBUG_OFF
@@ -394,7 +394,7 @@ void BNO055::reset(){
 		vTaskDelay(1 / portTICK_PERIOD_MS);
 		gpio_set_level(_rstPin, 1); // turn ON
 	}
-	vTaskDelay(700 / portTICK_PERIOD_MS); // (RE)BOOT TIME (datasheet raccomands 650ms)
+	vTaskDelay(700 / portTICK_PERIOD_MS); // (RE)BOOT TIME (datasheet recommends 650ms)
 }
 
 bno055_vector_t BNO055::getVector(bno055_vector_type_t vec){
