@@ -422,14 +422,11 @@ bno055_vector_t BNO055::getVector(bno055_vector_type_t vec){
 		scale = eulerScale;
 	}
 	
-	int16_t x = ((int16_t)buffer[0]) | (((int16_t)buffer[1]) << 8);
-	int16_t y = ((int16_t)buffer[2]) | (((int16_t)buffer[3]) << 8);
-	int16_t z = ((int16_t)buffer[4]) | (((int16_t)buffer[5]) << 8);
-	
 	bno055_vector_t xyz;
-	xyz.x = (double)x/scale;
-	xyz.y = (double)y/scale;
-	xyz.z = (double)z/scale;
+	xyz.x = (int16_t)((buffer[1] << 8) | buffer[0])/scale;
+	xyz.y = (int16_t)((buffer[3] << 8) | buffer[2])/scale;
+	xyz.z = (int16_t)((buffer[5] << 8) | buffer[4])/scale;
+	
 	return xyz;
 }
 
@@ -464,11 +461,11 @@ bno055_quaternion_t BNO055::getQuaternion(){
 	readLen(BNO055_REG_QUA_DATA_W_LSB, 8, buffer);
 	
 	bno055_quaternion_t wxyz;
-	wxyz.w = (int16_t)(((buffer[1]) << 8) | buffer[0])/scale;
-	wxyz.x = (int16_t)(((buffer[3]) << 8) | buffer[2])/scale;
-	wxyz.y = (int16_t)(((buffer[5]) << 8) | buffer[4])/scale;
-	wxyz.z = (int16_t)(((buffer[7]) << 8) | buffer[6])/scale;
-
+	wxyz.w = (int16_t)((buffer[1] << 8) | buffer[0])/scale;
+	wxyz.x = (int16_t)((buffer[3] << 8) | buffer[2])/scale;
+	wxyz.y = (int16_t)((buffer[5] << 8) | buffer[4])/scale;
+	wxyz.z = (int16_t)((buffer[7] << 8) | buffer[6])/scale;
+	
 	return wxyz;
 }
 
