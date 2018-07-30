@@ -65,7 +65,7 @@ extern "C" void app_main(){
 	while (1){
 		try{
 			bno055_calibration_t cal = bno.getCalibration();
-			bno055_vector_t v = bno.getQuaternion();
+			bno055_quaternion_t v = bno.getQuaternion();
 			ESP_LOGI(TAG, "Quaternion: W: %1.f X: %.1f Y: %.1f Z: %.1f || Calibration SYS: %u GYRO: %u ACC:%u MAG:%u", v.w,v.x, v.y, v.z, cal.sys, cal.gyro, cal.accel, cal.mag);
 		}
 		catch (BNO055BaseException& ex){
