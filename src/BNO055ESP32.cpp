@@ -321,7 +321,7 @@ int16_t BNO055::getSWRevision(){
 	setPage(0);
 	uint8_t buffer[2];
 	readLen(BNO055_REG_SW_REV_ID_LSB, 2, buffer);
-	return (((int16_t)buffer[0]) | (((int16_t)buffer[1]) << 8));
+	return (int16_t)((buffer[1] << 8) | buffer[0])
 }
 
 uint8_t BNO055::getBootloaderRevision(){
@@ -465,7 +465,7 @@ bno055_quaternion_t BNO055::getQuaternion(){
 	wxyz.x = (int16_t)((buffer[3] << 8) | buffer[2])/scale;
 	wxyz.y = (int16_t)((buffer[5] << 8) | buffer[4])/scale;
 	wxyz.z = (int16_t)((buffer[7] << 8) | buffer[6])/scale;
-	
+
 	return wxyz;
 }
 
@@ -484,14 +484,14 @@ bno055_offsets_t BNO055::getSensorOffsets(){
 	readLen(BNO055_REG_ACC_OFFSET_X_LSB, 22, buffer);
 	
 	bno055_offsets_t sensorOffsets;
-	sensorOffsets.accelOffsetX = (buffer[0]) | (buffer[1] << 8);
-	sensorOffsets.accelOffsetY = (buffer[2]) | (buffer[3] << 8);
-	sensorOffsets.accelOffsetZ = (buffer[4]) | (buffer[5] << 8);
+	sensorOffsets.accelOffsetX = ((buffer[1] << 8) | buffer[0]);
+	sensorOffsets.accelOffsetY = ((buffer[3] << 8) | buffer[2]);
+	sensorOffsets.accelOffsetZ = ((buffer[5] << 8) | buffer[4]);
 
 	/* Magnetometer offset range = +/- 6400 LSB where 1uT = 16 LSB */
-	sensorOffsets.magOffsetX = (buffer[6]) | (buffer[7] << 8);
-	sensorOffsets.magOffsetY = (buffer[8]) | (buffer[9] << 8);
-	sensorOffsets.magOffsetZ = (buffer[10]) | (buffer[11] << 8);
+	sensorOffsets.magOffsetX = ((buffer[7] << 8) | buffer[6]);
+	sensorOffsets.magOffsetY = ((buffer[9] << 8) | buffer[8]);
+	sensorOffsets.magOffsetZ = ((buffer[11] << 8) | buffer[10]);
 
 	/* Gyro offset range depends on the DPS range:
 		2000 dps = +/- 32000 LSB
@@ -501,15 +501,15 @@ bno055_offsets_t BNO055::getSensorOffsets(){
 		125 dps = +/- 2000 LSB
 		... where 1 DPS = 16 LSB
 	*/
-	sensorOffsets.gyroOffsetX = (buffer[12]) | (buffer[13] << 8);
-	sensorOffsets.gyroOffsetY = (buffer[14]) | (buffer[15] << 8);
-	sensorOffsets.gyroOffsetZ = (buffer[16]) | (buffer[17] << 8);
+	sensorOffsets.gyroOffsetX = ((buffer[13] << 8) | buffer[12]);
+	sensorOffsets.gyroOffsetY = ((buffer[15] << 8) | buffer[14]);
+	sensorOffsets.gyroOffsetZ = ((buffer[17] << 8) | buffer[16]);
 
 	/* Accelerometer radius = +/- 1000 LSB */
-	sensorOffsets.accelRadius = (buffer[18]) | (buffer[19] << 8);
+	sensorOffsets.accelRadius = ((buffer[19] << 8) | buffer[18]));
 
 	/* Magnetometer radius = +/- 960 LSB */
-	sensorOffsets.magRadius = (buffer[20]) | (buffer[21] << 8);
+	sensorOffsets.magRadius = ((buffer[21] << 8) | buffer[20])
 
 	return sensorOffsets;
 }
