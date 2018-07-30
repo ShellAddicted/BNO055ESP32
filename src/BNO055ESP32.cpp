@@ -321,7 +321,7 @@ int16_t BNO055::getSWRevision(){
 	setPage(0);
 	uint8_t buffer[2];
 	readLen(BNO055_REG_SW_REV_ID_LSB, 2, buffer);
-	return (int16_t)((buffer[1] << 8) | buffer[0])
+	return (int16_t)((buffer[1] << 8) | buffer[0]);
 }
 
 uint8_t BNO055::getBootloaderRevision(){
@@ -506,10 +506,10 @@ bno055_offsets_t BNO055::getSensorOffsets(){
 	sensorOffsets.gyroOffsetZ = ((buffer[17] << 8) | buffer[16]);
 
 	/* Accelerometer radius = +/- 1000 LSB */
-	sensorOffsets.accelRadius = ((buffer[19] << 8) | buffer[18]));
+	sensorOffsets.accelRadius = ((buffer[19] << 8) | buffer[18]);
 
 	/* Magnetometer radius = +/- 960 LSB */
-	sensorOffsets.magRadius = ((buffer[21] << 8) | buffer[20])
+	sensorOffsets.magRadius = ((buffer[21] << 8) | buffer[20]);
 
 	return sensorOffsets;
 }
@@ -519,38 +519,31 @@ void BNO055::setSensorOffsets(bno055_offsets_t newOffsets){
 		throw BNO055WrongOprMode("setSensorOffsets requires BNO055_OPERATION_MODE_CONFIG");
 	}
 	setPage(0);
-	write8(BNO055_REG_ACC_OFFSET_X_LSB, (newOffsets.accelOffsetX & 0xFF));
-	write8(BNO055_REG_ACC_OFFSET_X_MSB, ((newOffsets.accelOffsetX >> 8) & 0xFF));
+	uint8_t offs[22];
+	offs[0] = (newOffsets.accelOffsetX & 0xFF);
+	offs[1] = ((newOffsets.accelOffsetX >> 8) & 0xFF);
+	offs[2] = (newOffsets.accelOffsetY & 0xFF);
+	offs[3] = ((newOffsets.accelOffsetY >> 8) & 0xFF);
+	offs[4] = (newOffsets.accelOffsetZ & 0xFF);
+	offs[5] = ((newOffsets.accelOffsetZ >> 8) & 0xFF);
+	offs[6] = (newOffsets.magOffsetX & 0xFF);
+	offs[7] = ((newOffsets.magOffsetX >> 8) & 0xFF);
+	offs[8] = (newOffsets.magOffsetY & 0xFF);
+	offs[9] = ((newOffsets.magOffsetY >> 8) & 0xFF);
+	offs[10] = (newOffsets.magOffsetZ & 0xFF);
+	offs[11] = ((newOffsets.magOffsetZ >> 8) & 0xFF);
+	offs[12] = (newOffsets.gyroOffsetX & 0xFF);
+	offs[13] = ((newOffsets.gyroOffsetX >> 8) & 0xFF);
+	offs[14] = (newOffsets.gyroOffsetY & 0xFF);
+	offs[15] = ((newOffsets.gyroOffsetY >> 8) & 0xFF);
+	offs[16] = (newOffsets.gyroOffsetZ & 0xFF);
+	offs[17] = ((newOffsets.gyroOffsetZ >> 8) & 0xFF);
+	offs[18] = (newOffsets.accelRadius & 0xFF);
+	offs[19] = ((newOffsets.accelRadius >> 8) & 0xFF);
+	offs[20] = (newOffsets.magRadius & 0xFF);
+	offs[21] = ((newOffsets.magRadius >> 8) & 0xFF);
 
-	write8(BNO055_REG_ACC_OFFSET_Y_LSB, (newOffsets.accelOffsetY & 0xFF));
-	write8(BNO055_REG_ACC_OFFSET_Y_MSB, ((newOffsets.accelOffsetY >> 8) & 0xFF));
-
-	write8(BNO055_REG_ACC_OFFSET_Z_LSB, (newOffsets.accelOffsetZ & 0xFF));
-	write8(BNO055_REG_ACC_OFFSET_Z_MSB, ((newOffsets.accelOffsetZ >> 8) & 0xFF));
-
-	write8(BNO055_REG_MAG_OFFSET_X_LSB, (newOffsets.magOffsetX & 0xFF));
-	write8(BNO055_REG_MAG_OFFSET_X_MSB, ((newOffsets.magOffsetX >> 8) & 0xFF));
-
-	write8(BNO055_REG_MAG_OFFSET_Y_LSB, (newOffsets.magOffsetY & 0xFF));
-	write8(BNO055_REG_MAG_OFFSET_Y_MSB, ((newOffsets.magOffsetY >> 8) & 0xFF));
-
-	write8(BNO055_REG_MAG_OFFSET_Z_LSB, (newOffsets.magOffsetZ & 0xFF));
-	write8(BNO055_REG_MAG_OFFSET_Z_MSB, ((newOffsets.magOffsetZ >> 8) & 0xFF));
-
-	write8(BNO055_REG_GYR_OFFSET_X_LSB, (newOffsets.gyroOffsetX & 0xFF));
-	write8(BNO055_REG_GYR_OFFSET_X_MSB, ((newOffsets.gyroOffsetX >> 8) & 0xFF));
-
-	write8(BNO055_REG_GYR_OFFSET_Y_LSB, (newOffsets.gyroOffsetY & 0xFF));
-	write8(BNO055_REG_GYR_OFFSET_Y_MSB, ((newOffsets.gyroOffsetY >> 8) & 0xFF));
-
-	write8(BNO055_REG_GYR_OFFSET_Z_LSB, (newOffsets.gyroOffsetZ & 0xFF));
-	write8(BNO055_REG_GYR_OFFSET_Z_MSB, ((newOffsets.gyroOffsetZ >> 8) & 0xFF));
-
-	write8(BNO055_REG_ACC_RADIUS_LSB, (newOffsets.accelRadius & 0xFF));
-	write8(BNO055_REG_ACC_RADIUS_MSB, ((newOffsets.accelRadius >>8) & 0xFF));
-
-	write8(BNO055_REG_MAG_RADIUS_LSB, (newOffsets.magRadius & 0xFF));
-	write8(BNO055_REG_MAG_RADIUS_MSB, ((newOffsets.magRadius >> 8) & 0xFF));
+	writeLen(BNO055_REG_ACC_OFFSET_X_LSB, offs, 22);
 }
 
 bno055_interrupts_status_t BNO055::getInterruptsStatus(){
@@ -580,23 +573,19 @@ void IRAM_ATTR BNO055::bno055_interrupt_handler(void* arg){
 }
 
 void BNO055::enableInterrupt(uint8_t flag, bool useInterruptPin){
-	uint8_t tmp = 0;
+	uint8_t tmp[2];
 	setPage(1);
-	//INT_EN
-	read8(BNO055_REG_INT_EN, &tmp);
-	tmp |= flag;
-	write8(BNO055_REG_INT_EN, tmp); //update
-
-	//MSK
-	read8(BNO055_REG_INT_MSK, &tmp);
-	tmp = (useInterruptPin == true) ? (tmp | flag) : (tmp & ~flag);
-	write8(BNO055_REG_INT_MSK, tmp); //update
+	
+	readLen(BNO055_REG_INT_EN, 2, tmp);
+	tmp[0] |= flag;
+	tmp[1] = (useInterruptPin == true) ? (tmp[1] | flag) : (tmp[1] & ~flag);
+	writeLen(BNO055_REG_INT_EN, tmp, 2); // update
 }
 
 void BNO055::disableInterrupt(uint8_t flag){
 	uint8_t tmp = 0;
 	setPage(1);
-	//INT_EN
+
 	read8(BNO055_REG_INT_EN, &tmp);
 	tmp &= ~flag;
 	write8(BNO055_REG_INT_EN, tmp); //update
@@ -610,16 +599,17 @@ void BNO055::setAccelSlowMotionInterrupt(uint8_t threshold, uint8_t duration, bo
 	if (_mode != BNO055_OPERATION_MODE_CONFIG){
 		throw BNO055WrongOprMode("setAccelSlowMotionInterrupt requires BNO055_OPERATION_MODE_CONFIG");
 	}
-	uint8_t tmp = 0;
+	uint8_t tmp[2];
 	setPage(1);
-	write8(BNO055_REG_ACC_NM_SET, ((duration << 1) | 0x00)); // duration and Slow Motion flag
-	write8(BNO055_REG_ACC_NM_THRES, threshold);
-	read8(BNO055_REG_ACC_INT_SETTINGS, &tmp); //read the current value to avoid overwrite of other bits
-	tmp = (xAxis == true) ? (tmp | 0x04) : (tmp & ~0x04);
-	tmp = (yAxis == true) ? (tmp | 0x08) : (tmp & ~0x08);
-	tmp = (zAxis == true) ? (tmp | 0x10) : (tmp & ~0x10);
-	write8(BNO055_REG_ACC_INT_SETTINGS, tmp); //update
-	enableAccelSlowMotionInterrupt();
+	tmp[0] = threshold;
+	tmp[1] = ((duration << 1) | 0x00);
+	writeLen(BNO055_REG_ACC_NM_THRES, tmp, 2);
+	
+	readLen(BNO055_REG_ACC_INT_SETTINGS, 1, tmp); //read the current value to avoid overwrite of other bits
+	tmp[0] = (xAxis == true) ? (tmp[0] | 0x04) : (tmp[0] & ~0x04);
+	tmp[0] = (yAxis == true) ? (tmp[0] | 0x08) : (tmp[0] & ~0x08);
+	tmp[0] = (zAxis == true) ? (tmp[0] | 0x10) : (tmp[0] & ~0x10);
+	writeLen(BNO055_REG_ACC_INT_SETTINGS, tmp, 1); //update
 }
 
 void BNO055::disableAccelSlowMotionInterrupt(){
@@ -634,16 +624,18 @@ void BNO055::setAccelNoMotionInterrupt(uint8_t threshold, uint8_t duration, bool
 	if (_mode != BNO055_OPERATION_MODE_CONFIG){
 		throw BNO055WrongOprMode("setAccelNoMotionInterrupt requires BNO055_OPERATION_MODE_CONFIG");
 	}
-	uint8_t tmp = 0;
-	setPage(1);
 
-	write8(BNO055_REG_ACC_NM_SET, ((duration << 1) | 0x01)); // duration and No Motion flag
-	write8(BNO055_REG_ACC_NM_THRES, threshold);
-	read8(BNO055_REG_ACC_INT_SETTINGS, &tmp); //read the current value to avoid overwrite of other bits
-	tmp = (xAxis == true) ? (tmp | 0x04) : (tmp & ~0x04);
-	tmp = (yAxis == true) ? (tmp | 0x08) : (tmp & ~0x08);
-	tmp = (zAxis == true) ? (tmp | 0x10) : (tmp & ~0x10);
-	write8(BNO055_REG_ACC_INT_SETTINGS, tmp); //update
+	uint8_t tmp[2];
+	setPage(1);
+	tmp[0] = threshold;
+	tmp[1] = ((duration << 1) | 0x01);
+	writeLen(BNO055_REG_ACC_NM_THRES, tmp, 2);
+	
+	readLen(BNO055_REG_ACC_INT_SETTINGS, 1, tmp);
+	tmp[0] = (xAxis == true) ? (tmp[0] | 0x04) : (tmp[0] & ~0x04);
+	tmp[0] = (yAxis == true) ? (tmp[0] | 0x08) : (tmp[0] & ~0x08);
+	tmp[0] = (zAxis == true) ? (tmp[0] | 0x10) : (tmp[0] & ~0x10);
+	writeLen(BNO055_REG_ACC_INT_SETTINGS, tmp, 1); //update
 }
 
 void BNO055::disableAccelNoMotionInterrupt(){
@@ -658,15 +650,15 @@ void BNO055::setAccelAnyMotionInterrupt(uint8_t threshold, uint8_t duration, boo
 	if (_mode != BNO055_OPERATION_MODE_CONFIG){
 		throw BNO055WrongOprMode("setAccelAnyMotionInterrupt requires BNO055_OPERATION_MODE_CONFIG");
 	}
-	uint8_t tmp = 0;
+	uint8_t tmp[2];
 	setPage(1);
-	write8(BNO055_REG_ACC_AM_THRES, threshold);
-	read8(BNO055_REG_ACC_INT_SETTINGS, &tmp); //read the current value to avoid overwrite of other bits
-	tmp |= (duration & 0x03);
-	tmp = (xAxis == true) ? (tmp | 0x04) : (tmp & ~0x04);
-	tmp = (yAxis == true) ? (tmp | 0x08) : (tmp & ~0x08);
-	tmp = (zAxis == true) ? (tmp | 0x10) : (tmp & ~0x10);
-	write8(BNO055_REG_ACC_INT_SETTINGS, tmp); //update
+	tmp[0] = threshold;
+	readLen(BNO055_REG_ACC_INT_SETTINGS, 1, tmp+1);
+	tmp[1] |= (duration & 0x03);
+	tmp[1] = (xAxis == true) ? (tmp[1] | 0x04) : (tmp[1] & ~0x04);
+	tmp[1] = (yAxis == true) ? (tmp[1] | 0x08) : (tmp[1] & ~0x08);
+	tmp[1] = (zAxis == true) ? (tmp[1] | 0x10) : (tmp[1] & ~0x10);
+	writeLen(BNO055_REG_ACC_AM_THRES, tmp, 2);
 }
 
 void BNO055::disableAccelAnyMotionInterrupt(){
@@ -681,15 +673,15 @@ void BNO055::setAccelHighGInterrupt(uint8_t threshold, uint8_t duration, bool xA
 	if (_mode != BNO055_OPERATION_MODE_CONFIG){
 		throw BNO055WrongOprMode("setAccelHighGInterrupt requires BNO055_OPERATION_MODE_CONFIG");
 	}
-	uint8_t tmp = 0;
+	uint8_t tmp[3];
 	setPage(1);
-	write8(BNO055_REG_ACC_HG_THRES, threshold);
-	write8(BNO055_REG_ACC_HG_DURATION, duration);
-	read8(BNO055_REG_ACC_INT_SETTINGS, &tmp); //read the current value to avoid overwrite of other bits
-	tmp = (xAxis == true) ? (tmp | 0x20) : (tmp & ~0x20);
-	tmp = (yAxis == true) ? (tmp | 0x40) : (tmp & ~0x40);
-	tmp = (zAxis == true) ? (tmp | 0x80) : (tmp & ~0x80);
-	write8(BNO055_REG_ACC_INT_SETTINGS, tmp); //update
+	readLen(BNO055_REG_ACC_INT_SETTINGS, 1, tmp);
+	tmp[0] = (xAxis == true) ? (tmp[0] | 0x20) : (tmp[0] & ~0x20);
+	tmp[0] = (yAxis == true) ? (tmp[0] | 0x40) : (tmp[0] & ~0x40);
+	tmp[0] = (zAxis == true) ? (tmp[0] | 0x80) : (tmp[0] & ~0x80);
+	tmp[1] = duration;
+	tmp[2] = threshold;
+	writeLen(BNO055_REG_ACC_INT_SETTINGS, tmp, 3);
 }
 
 void BNO055::disableAccelHighGInterrupt(){
@@ -704,19 +696,19 @@ void BNO055::setGyroAnyMotionInterrupt(uint8_t threshold, uint8_t slopeSamples, 
 	if (_mode != BNO055_OPERATION_MODE_CONFIG){
 		throw BNO055WrongOprMode("setGyroAnyMotionInterrupt requires BNO055_OPERATION_MODE_CONFIG");
 	}
-	uint8_t tmp = 0;
+	uint8_t tmp[2];
 	setPage(1);
-	write8(BNO055_REG_GYR_AM_THRES, threshold);
-	tmp |= (awakeDuration & 0x03);
-	tmp = (tmp << 2) | (threshold & 0x03);
-	write8(BNO055_REG_GYR_AM_SET, tmp);
+	tmp[0] = threshold;
+	tmp[1] = 0x00 | (awakeDuration & 0x03);
+	tmp[1] = (tmp[1] << 2) | (threshold & 0x03);
+	writeLen(BNO055_REG_GYR_AM_THRES, tmp, 2);
 
-	read8(BNO055_REG_GYR_INT_SETTING, &tmp); //read the current value to avoid overwrite of other bits
-	tmp = (xAxis == true) ? (tmp | 0x01) : (tmp & ~0x01);
-	tmp = (yAxis == true) ? (tmp | 0x02) : (tmp & ~0x02);
-	tmp = (zAxis == true) ? (tmp | 0x04) : (tmp & ~0x04);
-	tmp = (filtered == true ) ? (tmp & ~0x40) : (tmp | 0x40);
-	write8(BNO055_REG_GYR_INT_SETTING, tmp); //update
+	readLen(BNO055_REG_GYR_INT_SETTING, 1, tmp);
+	tmp[0] = (xAxis == true) ? (tmp[0] | 0x01) : (tmp[0] & ~0x01);
+	tmp[0] = (yAxis == true) ? (tmp[0] | 0x02) : (tmp[0] & ~0x02);
+	tmp[0] = (zAxis == true) ? (tmp[0] | 0x04) : (tmp[0] & ~0x04);
+	tmp[0] = (filtered == true ) ? (tmp[0] & ~0x40) : (tmp[0] | 0x40);
+	writeLen(BNO055_REG_GYR_INT_SETTING, tmp, 1);
 }
 
 void BNO055::disableGyroAnyMotionInterrupt(){
@@ -731,36 +723,29 @@ void BNO055::setGyroHRInterrupt(uint8_t thresholdX, uint8_t durationX, uint8_t h
 	if (_mode != BNO055_OPERATION_MODE_CONFIG){
 		throw BNO055WrongOprMode("setGyroHRInterrupt requires BNO055_OPERATION_MODE_CONFIG");
 	}
-	uint8_t tmp = 0;
+	uint8_t tmp[7];
 	setPage(1);
+	readLen(BNO055_REG_GYR_INT_SETTING, 1, tmp);
+	tmp[0] = (xAxis == true) ? (tmp[0] | 0x01) : (tmp[0] & ~0x01);
+	tmp[0] = (yAxis == true) ? (tmp[0] | 0x02) : (tmp[0] & ~0x02);
+	tmp[0] = (zAxis == true) ? (tmp[0] | 0x04) : (tmp[0] & ~0x04);
+	tmp[0] = (filtered == true ) ? (tmp[0] & ~0x40) : (tmp[0] | 0x40);
 
-	read8(BNO055_REG_GYR_INT_SETTING, &tmp); //read the current value to avoid overwrite of other bits
-	tmp = (xAxis == true) ? (tmp | 0x01) : (tmp & ~0x01);
-	tmp = (yAxis == true) ? (tmp | 0x02) : (tmp & ~0x02);
-	tmp = (zAxis == true) ? (tmp | 0x04) : (tmp & ~0x04);
-	tmp = (filtered == true ) ? (tmp & ~0x40) : (tmp | 0x40);
-	write8(BNO055_REG_GYR_INT_SETTING, tmp); //update
+	tmp[1] = 0x00 | (hysteresisX & 0x03);
+	tmp[1] = (tmp[1] << 4) | (thresholdX & 0xF);
 
-	tmp = 0;
-	tmp |= (hysteresisX & 0x03);
-	tmp = (tmp << 4) | (thresholdX & 0xF);
-	write8(BNO055_REG_GYR_HR_X_SET, tmp);
+	tmp[2] = durationX;
 
-	write8(BNO055_REG_GYR_DUR_X, durationX);
+	tmp[3] = 0x00 | (hysteresisY & 0x03);
+	tmp[3] = (tmp[3] << 4) | (thresholdY & 0xF);
 
-	tmp = 0;
-	tmp |= (hysteresisY & 0x03);
-	tmp = (tmp << 4) | (thresholdY & 0xF);
-	write8(BNO055_REG_GYR_HR_Y_SET, tmp);
+	tmp[4] = durationY;
+
+	tmp[5] |= 0x00 | (hysteresisZ & 0x03);
+	tmp[5] = (tmp[5] << 4) | (thresholdZ & 0xF);
 	
-	write8(BNO055_REG_GYR_DUR_Y, durationY);
-
-	tmp = 0;
-	tmp |= (hysteresisZ & 0x03);
-	tmp = (tmp << 4) | (thresholdZ & 0xF);
-	write8(BNO055_REG_GYR_HR_Z_SET, tmp);
-	
-	write8(BNO055_REG_GYR_DUR_Z, durationZ);
+	tmp[6] = durationZ;
+	writeLen(BNO055_REG_GYR_INT_SETTING, tmp, 7);
 }
 
 void BNO055::disableGyroHRInterrupt(){
@@ -772,8 +757,10 @@ void BNO055::setAxisRemap(bno055_axis_config_t config, bno055_axis_sign_t sign){
 		throw BNO055WrongOprMode("setAxisRemap requires BNO055_OPERATION_MODE_CONFIG");
 	}
 	setPage(0);
-	write8(BNO055_REG_AXIS_MAP_CONFIG, ((uint8_t)config & 0x1F));
-	write8(BNO055_REG_AXIS_MAP_SIGN, ((uint8_t)sign & 0x07));
+	uint8_t tmp[2];
+	tmp[0] = ((uint8_t)config & 0x1F);
+	tmp[1] = ((uint8_t)sign & 0x07);
+	writeLen(BNO055_REG_AXIS_MAP_CONFIG, tmp, 2);
 }
 
 void BNO055::setUnits(bno055_accel_unit_t accel, bno055_angular_rate_unit_t angularRate, bno055_euler_unit_t euler, bno055_temperature_unit_t temp, bno055_data_output_format_t format){
@@ -816,13 +803,11 @@ void BNO055::setGyroConfig(bno055_gyro_range_t range, bno055_gyro_bandwidth_t ba
 		throw BNO055WrongOprMode("setGyroConfig requires BNO055_OPERATION_MODE_CONFIG");
 	}
 	setPage(1);
-	uint8_t tmp = 0;
-	tmp |= range;
-	tmp |= bandwidth;
-	write8(BNO055_REG_GYR_CONFIG_0, tmp);
-	tmp = 0;
-	tmp |= mode;
-	write8(BNO055_REG_GYR_CONFIG_1, tmp);
+	uint8_t tmp[2] = {0};
+	tmp[0] |= range;
+	tmp[0] |= bandwidth;
+	tmp[1] |= mode;
+	writeLen(BNO055_REG_GYR_CONFIG_0, tmp, 2);
 }
 
 void BNO055::setMagConfig(bno055_mag_rate_t rate, bno055_mag_pwrmode_t pwrmode, bno055_mag_mode_t mode){
