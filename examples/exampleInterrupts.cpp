@@ -44,7 +44,7 @@ extern "C" void app_main(){
 	// storedOffsets.accelRadius = 0;
 	// storedOffsets.magRadius = 662;
 
-	BNO055 bno(UART_NUM_1, GPIO_NUM_17, GPIO_NUM_16);
+	BNO055 bno(UART_NUM_1, GPIO_NUM_17, GPIO_NUM_16, GPIO_NUM_MAX, GPIO_NUM_23); // GPIO_NUM_MAX means unset
 	try{
 		bno.begin(); //BNO055 is in CONFIG_MODE until it is changed
 		bno.enableExternalCrystal();
