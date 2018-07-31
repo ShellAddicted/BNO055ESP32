@@ -31,9 +31,22 @@
 static const char *BNO055_LOG_TAG = "BNO055";
 
 BNO055::BNO055(uart_port_t uartPort, gpio_num_t txPin, gpio_num_t rxPin, gpio_num_t rstPin, gpio_num_t intPin){
+	_i2cFlag = false;
+
 	_uartPort = uartPort;
 	_txPin = txPin;
 	_rxPin = rxPin;
+
+	_rstPin = rstPin;
+	_intPin = intPin;
+}
+
+BNO055::BNO055(i2c_port_t i2cPort, uint8_t i2cAddr, gpio_num_t rstPin, gpio_num_t intPin){
+	_i2cFlag = true;
+
+	_i2cPort = i2cPort;
+	_i2cAddr = i2cAddr;
+
 	_rstPin = rstPin;
 	_intPin = intPin;
 }
@@ -71,7 +84,88 @@ std::exception BNO055::getException(uint8_t errcode){
 	}
 }
 
-void BNO055::readLen(bno055_reg_t reg, uint8_t *buffer, uint8_t len, uint32_t timeoutMS){
+void BNO055::i2c_readLen(uint8_t reg, uint8_t *buffer, uint8_t len, uint32_t timeoutMS){
+	esp_err_t errx;
+	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+	i2c_master_start(cmd);
+	i2c_master_write_byte(cmd, (_i2cAddr << 1) | I2C_MASTER_WRITE, ACK_EN);
+	i2c_master_write_byte(cmd, reg, ACK_EN);
+	i2c_master_stop(cmd);
+
+	for (int round = 1; round <= UART_ROUND_NUM; round++){
+		#ifndef BNO055_DEBUG_OFF
+		ESP_LOGD(BNO055_LOG_TAG, "(i2c_RL1) Round %d", round);
+		#endif
+		errx = i2c_master_cmd_begin(_i2cPort, cmd, timeoutMS/portTICK_PERIOD_MS);
+		if (errx == ESP_OK){
+			break;
+		}
+		else if ((errx != ESP_OK) && (round < UART_ROUND_NUM)){
+			continue;
+		}
+		else{
+			i2c_cmd_link_delete(cmd);
+			ESP_LOGE(BNO055_LOG_TAG, "(i2c RL) Error: %d", (int)errx);
+			throw BNO055I2CError();
+		}
+	}
+	i2c_cmd_link_delete(cmd);
+
+	cmd = i2c_cmd_link_create();
+	i2c_master_start(cmd);
+	i2c_master_write_byte(cmd, (_i2cAddr << 1) | I2C_MASTER_READ, ACK_EN);
+	i2c_master_read(cmd, buffer, len, (i2c_ack_type_t)0x02);
+	i2c_master_stop(cmd);
+	for (int round = 1; round <= UART_ROUND_NUM; round++){
+		#ifndef BNO055_DEBUG_OFF
+		ESP_LOGD(BNO055_LOG_TAG, "(i2c_RL2) Round %d", round);
+		#endif
+		errx = i2c_master_cmd_begin(_i2cPort, cmd, timeoutMS/portTICK_PERIOD_MS);
+		if (errx == ESP_OK){
+			break;
+		}
+		else if ((errx != ESP_OK) && (round < UART_ROUND_NUM)){
+			continue;
+		}
+		else{
+			i2c_cmd_link_delete(cmd);
+			ESP_LOGE(BNO055_LOG_TAG, "(i2c RL2) Error: %d", (int)errx);
+			throw BNO055I2CError();
+		}
+	}
+	i2c_cmd_link_delete(cmd);
+}
+
+void BNO055::i2c_writeLen(uint8_t reg, uint8_t *buffer, uint8_t len, uint32_t timeoutMS){
+	esp_err_t errx;
+	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+	i2c_master_start(cmd);
+	i2c_master_write_byte(cmd, (_i2cAddr << 1) | I2C_MASTER_WRITE, ACK_EN);
+	i2c_master_write_byte(cmd, reg, ACK_EN);
+	i2c_master_write(cmd, buffer, len, 0x01);
+	i2c_master_stop(cmd);
+
+	for (int round = 1; round <= UART_ROUND_NUM; round++){
+		#ifndef BNO055_DEBUG_OFF
+		ESP_LOGD(BNO055_LOG_TAG, "(i2c_WL) Round %d", round);
+		#endif
+		errx = i2c_master_cmd_begin(_i2cPort, cmd, timeoutMS/portTICK_PERIOD_MS);
+		if (errx == ESP_OK){
+			break;
+		}
+		else if ((errx != ESP_OK) && (round < UART_ROUND_NUM)){
+			continue;
+		}
+		else{
+			i2c_cmd_link_delete(cmd);
+			ESP_LOGE(BNO055_LOG_TAG, "(i2c WL) Error: %d", (int)errx);
+			throw BNO055I2CError();
+		}
+	}
+	i2c_cmd_link_delete(cmd);
+}
+
+void BNO055::uart_readLen(bno055_reg_t reg, uint8_t *buffer, uint8_t len, uint32_t timeoutMS){
 	uint8_t res = 0;
 	
 	uint8_t cmd[4];
@@ -146,7 +240,7 @@ void BNO055::readLen(bno055_reg_t reg, uint8_t *buffer, uint8_t len, uint32_t ti
 	}
 }
 
-void BNO055::writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, uint32_t timeoutMS){
+void BNO055::uart_writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, uint32_t timeoutMS){
 	uint8_t *cmd = (uint8_t *) malloc(len+4);
 	if (cmd == NULL){
 		//malloc failed
@@ -213,6 +307,24 @@ void BNO055::writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, uint32
 			free(cmd);
 			throw BNO055UartTimeout();
 		}
+	}
+}
+
+void BNO055::readLen(bno055_reg_t reg, uint8_t *buffer, uint8_t len, uint32_t timeoutMS){
+	if (_i2cFlag){
+		i2c_readLen(reg, buffer, len, timeoutMS);
+	}
+	else{
+		uart_readLen(reg, buffer, len, timeoutMS);
+	}
+}
+
+void BNO055::writeLen(bno055_reg_t reg, uint8_t *buffer, uint8_t len, uint32_t timeoutMS){
+	if (!_i2cFlag){
+		uart_writeLen(reg, buffer, len, timeoutMS);
+	}
+	else{
+		i2c_writeLen(reg, buffer, len, timeoutMS);
 	}
 }
 
@@ -848,13 +960,15 @@ void BNO055::setAccelSleepConfig(bno055_accel_sleep_duration_t sleepDuration, bn
 }
 
 void BNO055::begin(){
-	// Setup UART
-	esp_err_t esperr = uart_driver_delete(_uartPort);
-	uart_param_config(_uartPort, &uart_config);
-	uart_set_pin(_uartPort, _txPin, _rxPin, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-	esperr = uart_driver_install(_uartPort, 128 * 2, 0, 0, NULL, 0);
-	if (esperr != ESP_OK){
-		throw BNO055UartInitFailed();
+	if (!_i2cFlag){
+		// Setup UART
+		esp_err_t esperr = uart_driver_delete(_uartPort);
+		uart_param_config(_uartPort, &uart_config);
+		uart_set_pin(_uartPort, _txPin, _rxPin, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+		esperr = uart_driver_install(_uartPort, 128 * 2, 0, 0, NULL, 0);
+		if (esperr != ESP_OK){
+			throw BNO055UartInitFailed();
+		}
 	}
 
 	#ifndef BNO055_DEBUG_OFF

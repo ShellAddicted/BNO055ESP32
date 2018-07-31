@@ -6,10 +6,10 @@ Tested on ESP32D0WDQ6 (DevKitC) with [Adafruit's BNO055 Breakout Board](https://
 
 #### Supported Interfaces
 - <b>UART</b> - fully Supported.
-- <b>I²C</b> - <b>not supported*</b>
+- <b>I²C</b> - <b>partially supported*</b>
 
-*I²C is not supported due to several ESP32's I²C issues probably caused by clock stretching.  
-when espressif team will solve this issues, I²C will be supported.
+*I²C is partially supported due to several issues probably caused by clock stretching.  
+until espressif team will solve this issues, UART is suggested.
 
 # Getting Started
 ***NOTE: this code is not (yet) Production Ready.***   
@@ -25,6 +25,12 @@ for more details see [examples/](https://github.com/ShellAddicted/BNO055ESP32/tr
 
 ## Wiring
 
-PS1 -> 3.3v (HIGH) -> Enables UART protocol instead of I²C  
+### UART
+PS1 -> 3.3v (HIGH) -> Enables UART protocol  
 SCL -> UART RX (Default: GPIO_NUM_17)  
-SDA -> UART TX (Default: GPIO_NUM_16)  
+SDA -> UART TX (Default: GPIO_NUM_16)
+
+### I2C
+PS1 -> GND (LOW) -> Enables I²C protocol  
+SCL -> SCL (Default: GPIO_NUM_22)  
+SDA -> SDA (Default: GPIO_NUM_21)

@@ -36,6 +36,9 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/uart.h"
+#include "driver/i2c.h"
+
+#define ACK_EN 0x01
 
 #ifndef BNO055_DEBUG_OFF
 #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
@@ -535,8 +538,14 @@ class BNO055WrongOprMode: public BNO055BaseException{
 	BNO055WrongOprMode(std::string message = "Check the OperationMode.") : BNO055BaseException(message){};
 };
 
+class BNO055I2CError: public BNO055BaseException{
+	public:
+	BNO055I2CError(std::string message = "I2CError: Check your wiring.") : BNO055BaseException(message){};
+};
+
 class BNO055{
 	public:
+	BNO055(i2c_port_t i2cPort, uint8_t i2cAddr, gpio_num_t rstPin = GPIO_NUM_MAX, gpio_num_t intPin = GPIO_NUM_MAX);
 	BNO055(uart_port_t uartPort, gpio_num_t txPin = GPIO_NUM_17, gpio_num_t rxPin = GPIO_NUM_16, gpio_num_t rstPin = GPIO_NUM_MAX, gpio_num_t intPin = GPIO_NUM_MAX);
 
 	void begin();
@@ -623,6 +632,12 @@ class BNO055{
 
 	std::exception getException(uint8_t errcode);
 
+	void i2c_readLen(uint8_t reg, uint8_t *buffer, uint8_t len, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
+	void i2c_writeLen(uint8_t reg, uint8_t *buffer, uint8_t len, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
+
+	void uart_readLen(bno055_reg_t reg, uint8_t *buffer, uint8_t len, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
+	void uart_writeLen(bno055_reg_t reg, uint8_t *data, uint8_t len, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
+
 	void readLen(bno055_reg_t reg, uint8_t *buffer, uint8_t len, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
 	void read8(bno055_reg_t reg, uint8_t *val, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
 	void writeLen(bno055_reg_t reg, uint8_t *data, uint8_t len, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
@@ -672,8 +687,12 @@ class BNO055{
 		gpio_num_t _intPin;
 		
 		uint8_t _page;
+
+		bool _i2cFlag;
 		
 		uart_port_t _uartPort;
+		i2c_port_t _i2cPort;
+		uint8_t _i2cAddr;
 		
 		gpio_num_t _txPin;
 		gpio_num_t _rxPin;
