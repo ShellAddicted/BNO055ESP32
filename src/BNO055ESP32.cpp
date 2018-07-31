@@ -576,10 +576,10 @@ void BNO055::enableInterrupt(uint8_t flag, bool useInterruptPin){
 	uint8_t tmp[2];
 	setPage(1);
 	
-	readLen(BNO055_REG_INT_EN, tmp, 2);
+	readLen(BNO055_REG_INT_MSK, tmp, 2);
 	tmp[0] |= flag;
 	tmp[1] = (useInterruptPin == true) ? (tmp[1] | flag) : (tmp[1] & ~flag);
-	writeLen(BNO055_REG_INT_EN, tmp, 2); // update
+	writeLen(BNO055_REG_INT_MSK, tmp, 2); // update
 }
 
 void BNO055::disableInterrupt(uint8_t flag){
