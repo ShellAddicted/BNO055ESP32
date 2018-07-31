@@ -26,5 +26,5 @@ for more details see [examples/](https://github.com/ShellAddicted/BNO055ESP32/tr
 ## Wiring
 
 PS1 -> 3.3v (HIGH) -> Enables UART protocol instead of I²C  
-SDA -> UART RX (Default: GPIO_NUM_17)  
-SCL -> UART TX (Default: GPIO_NUM_16)  
+SCL -> UART RX (Default: GPIO_NUM_17)  
+SDA -> UART TX (Default: GPIO_NUM_16)  
