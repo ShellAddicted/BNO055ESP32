@@ -174,7 +174,6 @@ void BNO055::writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, uint32
 		#ifndef BNO055_DEBUG_OFF
 		ESP_LOG_BUFFER_HEXDUMP(BNO055_LOG_TAG, (const char*) cmd,(len+4), ESP_LOG_DEBUG);
 		#endif
-		free(cmd);
 
 		if (timeoutMS == 0){
 			return; // Do not expect ACK/response
@@ -191,6 +190,7 @@ void BNO055::writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, uint32
 
 			if (data[0] == 0xEE){
 				if (data[1] == 0x01){ //OK
+					free(cmd);
 					break;
 				}
 				else if ((data[1] == 0x07 || data[1] == 0x03 || data[1] == 0x06|| data[1] == 0x0A) && (round < UART_ROUND_NUM)){ // TRY AGAIN
@@ -198,16 +198,19 @@ void BNO055::writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, uint32
 				}
 				else{ //Error :-(
 					ESP_LOGE(BNO055_LOG_TAG, "(WL) Error: %d.", (int)data[1]);
+					free(cmd);
 					throw getException(data[1]);
 				}
 			}
 
 			else{
+				free(cmd);
 				ESP_LOGE(BNO055_LOG_TAG, "(WL) Error: (BNO55_UNKNOW_ERROR)");
 				throw BNO055UnknowError();
 			}
 		}
 		else{
+			free(cmd);
 			throw BNO055UartTimeout();
 		}
 	}

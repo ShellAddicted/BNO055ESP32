@@ -87,19 +87,19 @@ extern "C" void app_main(){
 	}
 	
 	while (1){
-		if (bno.interruptFlag == true){
-			//See bno055_interrupts_status_t for more details.
-			bno055_interrupts_status_t ist = bno.getInterruptsStatus();
-			// remember that multiple interrupts can be triggered at the same time. so you shouldn't use 'else if'
-			if (ist.accelAnyMotion == 1){
-				ESP_LOGI(TAG, "AccelAnyMotion Interrupt received.");
-			}
-			if (ist.accelNoSlowMotion == 1){
-				ESP_LOGI(TAG, "accelNoSlowMotion Interrupt received.");
-			}
-			bno.clearInterruptPin(); //don't forget to place this.
-		}
 		try{
+			if (bno.interruptFlag == true){
+				//See bno055_interrupts_status_t for more details.
+				bno055_interrupts_status_t ist = bno.getInterruptsStatus();
+				// remember that multiple interrupts can be triggered at the same time. so you shouldn't use 'else if'
+				if (ist.accelAnyMotion == 1){
+					ESP_LOGI(TAG, "AccelAnyMotion Interrupt received.");
+				}
+				if (ist.accelNoSlowMotion == 1){
+					ESP_LOGI(TAG, "accelNoSlowMotion Interrupt received.");
+				}
+				bno.clearInterruptPin(); //don't forget to place this.
+			}
 			//Calibration 3 = fully calibrated, 0 = uncalibrated
 			bno055_calibration_t cal = bno.getCalibration();
 			bno055_vector_t v = bno.getVectorEuler();
