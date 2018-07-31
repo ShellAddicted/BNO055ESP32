@@ -30,7 +30,7 @@
 static const char *TAG = "BNO055ESP32Example";
 
 extern "C" void app_main(){
-	// This values are random, see exampleCalibration.cpp for more details.
+	// see exampleCalibration.cpp for more details.
 	// bno055_offsets_t storedOffsets;
 	// storedOffsets.accelOffsetX = 29;
 	// storedOffsets.accelOffsetY = 24;
@@ -44,7 +44,7 @@ extern "C" void app_main(){
 	// storedOffsets.accelRadius = 0;
 	// storedOffsets.magRadius = 662;
 
-	BNO055 bno(UART_NUM_1, GPIO_NUM_17, GPIO_NUM_16, GPIO_NUM_MAX, GPIO_NUM_23); // GPIO_NUM_MAX means unset
+	BNO055 bno(UART_NUM_1, GPIO_NUM_17, GPIO_NUM_16);
 	try{
 		bno.begin(); //BNO055 is in CONFIG_MODE until it is changed
 		bno.enableExternalCrystal();
@@ -57,7 +57,7 @@ extern "C" void app_main(){
 		bno.setOprModeNdof();
 		ESP_LOGI(TAG, "Setup Done.");
 	}
-	catch (BNO055BaseException& ex){
+	catch (BNO055BaseException& ex){ //see BNO055ESP32.h for more details about exceptions
 		ESP_LOGE(TAG, "Setup Failed, Error: %s", ex.what());
 		return;
 	}
@@ -66,14 +66,31 @@ extern "C" void app_main(){
 		return;
 	}
 
-	int8_t temperature = bno.getTemp();
-	ESP_LOGI(TAG, "TEMP: %d°C", temperature);
+	try{
+		int8_t temperature = bno.getTemp();
+		ESP_LOGI(TAG, "TEMP: %d°C", temperature);
+
+		int16_t sw = bno.getSWRevision();
+		uint8_t bl_rev = bno.getBootloaderRevision();
+		ESP_LOGI(TAG, "SW rev: %d, bootloader rev: %u", sw, bl_rev);
+
+		bno055_self_test_result_t res = bno.getSelfTestResult();
+		ESP_LOGI(TAG, "Self-Test Results: MCU: %u, GYR:%u, MAG:%u, ACC: %u",res.mcuState,res.gyrState,res.magState,res.accState);
+	}
+	catch (BNO055BaseException& ex){ //see BNO055ESP32.h for more details about exceptions
+		ESP_LOGE(TAG, "Something bad happened: %s", ex.what());
+		return;
+	}
+	catch (std::exception& ex){
+		ESP_LOGE(TAG, "Something bad happened: %s", ex.what());
+		return;
+	}
 	
 	while (1){
 		if (bno.interruptFlag == true){
 			//See bno055_interrupts_status_t for more details.
 			bno055_interrupts_status_t ist = bno.getInterruptsStatus();
-			// remmeber that multiple interrupts can be triggered at the same time. so you shouldn't use 'else if'
+			// remember that multiple interrupts can be triggered at the same time. so you shouldn't use 'else if'
 			if (ist.accelAnyMotion == 1){
 				ESP_LOGI(TAG, "AccelAnyMotion Interrupt received.");
 			}
@@ -89,11 +106,11 @@ extern "C" void app_main(){
 			ESP_LOGI(TAG, "Euler: X: %.1f Y: %.1f Z: %.1f || Calibration SYS: %u GYRO: %u ACC:%u MAG:%u", v.x, v.y, v.z, cal.sys, cal.gyro, cal.accel, cal.mag);
 		}
 		catch (BNO055BaseException& ex){
-			ESP_LOGE(TAG, "Error: %s", ex.what());
+			ESP_LOGE(TAG, "Something bad happened: %s", ex.what());
 			return;
 		}
 		catch (std::exception &ex){
-			ESP_LOGE(TAG, "Error: %s", ex.what());
+			ESP_LOGE(TAG, "Something bad happened: %s", ex.what());
 		}
 		vTaskDelay(100 / portTICK_PERIOD_MS); // in fusion mode max output rate is 100hz (actual rate: 100ms (10hz))
 	}

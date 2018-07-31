@@ -30,15 +30,30 @@
 static const char *TAG = "BNO055ESP32Example";
 
 extern "C" void app_main(){
+	// see exampleCalibration.cpp for more details.
+	// bno055_offsets_t storedOffsets;
+	// storedOffsets.accelOffsetX = 29;
+	// storedOffsets.accelOffsetY = 24;
+	// storedOffsets.accelOffsetZ = 16;
+	// storedOffsets.magOffsetX = -243;
+	// storedOffsets.magOffsetY = -420;
+	// storedOffsets.magOffsetZ = -131;
+	// storedOffsets.gyroOffsetX = 1;
+	// storedOffsets.gyroOffsetY = -1;
+	// storedOffsets.gyroOffsetZ = 0;
+	// storedOffsets.accelRadius = 0;
+	// storedOffsets.magRadius = 662;
+
 	BNO055 bno(UART_NUM_1, GPIO_NUM_17, GPIO_NUM_16);
 	try{
 		bno.begin(); //BNO055 is in CONFIG_MODE until it is changed
 		bno.enableExternalCrystal();
+		//bno.setSensorOffsets(storedOffsets);
 		//bno.setAxisRemap(BNO055_REMAP_CONFIG_P1, BNO055_REMAP_SIGN_P1); // see datasheet, section 3.4
 		bno.setOprModeNdof();
 		ESP_LOGI(TAG, "Setup Done.");
 	}
-	catch (BNO055BaseException& ex){
+	catch (BNO055BaseException& ex){ //see BNO055ESP32.h for more details about exceptions
 		ESP_LOGE(TAG, "Setup Failed, Error: %s", ex.what());
 		return;
 	}
@@ -47,6 +62,26 @@ extern "C" void app_main(){
 		return;
 	}
 
+	try{
+		int8_t temperature = bno.getTemp();
+		ESP_LOGI(TAG, "TEMP: %d°C", temperature);
+
+		int16_t sw = bno.getSWRevision();
+		uint8_t bl_rev = bno.getBootloaderRevision();
+		ESP_LOGI(TAG, "SW rev: %d, bootloader rev: %u", sw, bl_rev);
+
+		bno055_self_test_result_t res = bno.getSelfTestResult();
+		ESP_LOGI(TAG, "Self-Test Results: MCU: %u, GYR:%u, MAG:%u, ACC: %u",res.mcuState,res.gyrState,res.magState,res.accState);
+	}
+	catch (BNO055BaseException& ex){ //see BNO055ESP32.h for more details about exceptions
+		ESP_LOGE(TAG, "Something bad happened: %s", ex.what());
+		return;
+	}
+	catch (std::exception& ex){
+		ESP_LOGE(TAG, "Something bad happened: %s", ex.what());
+		return;
+	}
+	
 	while (1){
 		try{
 			//Calibration 3 = fully calibrated, 0 = uncalibrated
@@ -55,20 +90,20 @@ extern "C" void app_main(){
 			ESP_LOGI(TAG, "Euler: X: %.1f Y: %.1f Z: %.1f || Calibration SYS: %u GYRO: %u ACC:%u MAG:%u", v.x, v.y, v.z, cal.sys, cal.gyro, cal.accel, cal.mag);
 			if (cal.gyro == 3 && cal.accel == 3 && cal.mag == 3){
 				ESP_LOGI(TAG, "Fully Calibrated.");
-				bno.setOprModeConfig(); //Change OPR_MODE
+				bno.setOprModeConfig(); //Change to OPR_MODE
 				bno055_offsets_t txt = bno.getSensorOffsets(); //NOTE: this must be executed in CONFIG_MODE
 				ESP_LOGI(TAG, "\nOffsets:\nAccel: X:%d, Y:%d, Z:%d;\nMag: X:%d, Y:%d, Z:%d;\nGyro: X:%d, Y:%d, Z:%d;\nAccelRadius: %d;\nMagRadius: %d;\n", txt.accelOffsetX, txt.accelOffsetY, txt.accelOffsetZ, txt.magOffsetX, txt.magOffsetY, txt.magOffsetZ, txt.gyroOffsetX, txt.gyroOffsetY, txt.gyroOffsetZ, txt.accelRadius, txt.magRadius);
-				ESP_LOGI(TAG,"Store this values, place them using setSensorOffsets() after every reset of the BNO055 to avoid the calibration process, unluckily MAG requires to be calibrated after every reset, for more information consult datasheet.");
+				ESP_LOGI(TAG,"Store this values, place them using setSensorOffsets() after every reset of the BNO055 to avoid the calibration process, unluckily MAG requires to be calibrated after every reset, for more information check datasheet.");
 				break;
 			}
 		}
 		catch (BNO055BaseException& ex){
-			ESP_LOGE(TAG, "Error: %s", ex.what());
+			ESP_LOGE(TAG, "Something bad happened: %s", ex.what());
 			return;
 		}
 		catch (std::exception &ex){
-			ESP_LOGE(TAG, "Error: %s", ex.what());
+			ESP_LOGE(TAG, "Something bad happened: %s", ex.what());
 		}
-		vTaskDelay(100 / portTICK_PERIOD_MS); //in fusion mode max output rate is 100hz (actual rate: 100ms (10hz))
+		vTaskDelay(100 / portTICK_PERIOD_MS); // in fusion mode max output rate is 100hz (actual rate: 100ms (10hz))
 	}
 }
