@@ -1,4 +1,4 @@
-# BNO055ESP32
+# BNO055ESP32 [![Build Status](https://travis-ci.org/ShellAddicted/BNO055ESP32.svg?branch=master)](https://travis-ci.org/ShellAddicted/BNO055ESP32)
 This idf-component permits to control [Bosch-Sensortec's BNO055](https://www.bosch-sensortec.com/bst/products/all_products/bno055) using an [Espressif's ESP32 SoC](https://www.espressif.com/en/products/hardware/esp32/overview) (running [esp-idf](https://github.com/espressif/esp-idf)).
 
 # Compatibility
