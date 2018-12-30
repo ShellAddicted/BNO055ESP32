@@ -1,0 +1,53 @@
+sudo: false
+language: bash
+os:
+  - linux
+addons:
+  apt:
+    packages:
+      - gperf
+      - python
+      - python-serial
+
+before_install:
+  # Save path to the git respository
+  - export REPO_PATH=$(pwd)
+  - cd ~
+  - git clone https://github.com/espressif/esp-idf-template esp-idf-template
+  - mkdir -p esp-idf-template/components/
+  - mv $REPO_PATH esp-idf-template/components/BNO055ESP32
+  - REPO_PATH=~/esp-idf-template/components/BNO055ESP32
+  - rm -rf ~/esp-idf-template/main/main.c
+  - cp $REPO_PATH/examples/example.cpp ~/esp-idf-template/main/main.cpp
+  - export PROJECT_PATH=~/esp-idf-template/
+
+install:
+  # Install ESP32 toochain following steps as desribed
+  # in http://esp-idf.readthedocs.io/en/latest/linux-setup.html
+  #
+  # Get required packages - already done above, see addons: apt: packages:
+  # - sudo apt-get install git wget make libncurses-dev flex bison gperf python python-serial
+  # Prepare directory for the toolchain
+  - mkdir -p ~/esp
+  - cd ~/esp
+  # Download binary toolchain for the ESP32
+  - wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
+  - tar -xzf xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
+  # Make xtensa-esp32-elf available for all terminal sessions
+  - export PATH=$PATH:$HOME/esp/xtensa-esp32-elf/bin
+  # Get ESP-IDF from github
+  - git clone --recursive https://github.com/espressif/esp-idf.git
+  # Set the path to ESP-IDF directory
+  - export IDF_PATH=~/esp/esp-idf
+  - pip install --user -r $IDF_PATH/requirements.txt
+
+script:
+  # Go back to the git repository
+  - cd $PROJECT_PATH
+  # set BATCH_BUILD & Update configuration so that kconfig doesn't start interactive mode
+  - export BATCH_BUILD=0
+  - make defconfig
+  - # enable CXX exceptions
+  - sed -i -e 's/CONFIG_CXX_EXCEPTIONS=$/CONFIG_CXX_EXCEPTIONS=y/g' ./sdkconfig
+  # Build project from the git repository
+  - make -j$(nproc)
