@@ -44,9 +44,7 @@ extern "C" void app_main(){
 	// storedOffsets.accelRadius = 0;
 	// storedOffsets.magRadius = 662;
 	
-	/*
-	
-	//to use I2C uncomment this block
+	/* to use I2C uncomment this block and remove line 66
 
 	// Setup I²C
 	i2c_config_t conf;
@@ -59,16 +57,13 @@ extern "C" void app_main(){
 	i2c_param_config(I2C_NUM_0, &conf);
 	i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
 	i2c_set_timeout(I2C_NUM_0, 30000);
+
+	//to use i²C leave the following line active
     BNO055 bno((i2c_port_t)I2C_NUM_0, 0x28); // BNO055 I2C Addr can be 0x28 or 0x29 (depends on your hardware)
 	*/
 
-
-	/*
-	
-	//to use UART uncomment this block
-
+	//to use UART use the following line active (UART is suggested)
 	BNO055 bno(UART_NUM_1, GPIO_NUM_17, GPIO_NUM_16);
-	*/
 
 	try{
 		bno.begin(); //BNO055 is in CONFIG_MODE until it is changed
