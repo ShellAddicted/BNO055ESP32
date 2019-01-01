@@ -70,6 +70,11 @@ extern "C" void app_main(){
 		bno.enableExternalCrystal();
 		//bno.setSensorOffsets(storedOffsets);
 		//bno.setAxisRemap(BNO055_REMAP_CONFIG_P1, BNO055_REMAP_SIGN_P1); // see datasheet, section 3.4
+		/* you can specify a PoWeRMode using:
+			- setPwrModeNormal(); (Default on startup)
+			- setPwrModeLowPower();
+			- setPwrModeSuspend(); (while suspended bno055 must remain in CONFIG_MODE)
+		*/
 		bno.setOprModeNdof();
 		ESP_LOGI(TAG, "Setup Done.");
 	}

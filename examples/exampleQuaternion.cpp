@@ -71,6 +71,13 @@ extern "C" void app_main(){
 		//bno.setSensorOffsets(storedOffsets);
 		//bno.setAxisRemap(BNO055_REMAP_CONFIG_P1, BNO055_REMAP_SIGN_P1); // see datasheet, section 3.4
 		bno.setOprModeNdof();
+		//bno.setSensorOffsets(storedOffsets);
+		//bno.setAxisRemap(BNO055_REMAP_CONFIG_P1, BNO055_REMAP_SIGN_P1); // see datasheet, section 3.4
+		/* you can specify a PoWeRMode using:
+			- setPwrModeNormal(); (Default on startup)
+			- setPwrModeLowPower();
+			- setPwrModeSuspend(); (while suspended bno055 must remain in CONFIG_MODE)
+		*/
 		ESP_LOGI(TAG, "Setup Done.");
 	}
 	catch (BNO055BaseException& ex){ //see BNO055ESP32.h for more details about exceptions

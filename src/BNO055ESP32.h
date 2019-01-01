@@ -45,7 +45,7 @@
 #endif
 #include "esp_log.h"
 
-#define DEFAULT_UART_TIMEOUT_MS 20 // you can try to decrease/increase this.
+#define DEFAULT_UART_TIMEOUT_MS 30 // you can try to decrease/increase this. (DEFAULT: 30)
 
 // BNO055 Registers(Table 4-1, Pag 51)
 typedef enum{
@@ -554,7 +554,10 @@ class BNO055{
 
 	void setPage(uint8_t page, bool forced = false);
 
-	void setPwrMode(bno055_powermode_t pwrMode);
+	void setPwrModeNormal();
+	void setPwrModeLowPower();
+	void setPwrModeSuspend();
+
 	void setOprModeConfig(bool forced=false);
 	void setOprModeAccOnly(bool forced=false);
 	void setOprModeMagOnly(bool forced=false);
@@ -706,6 +709,8 @@ class BNO055{
 
 		bno055_opmode_t _mode;
 		void setOprMode(bno055_opmode_t mode, bool forced=false);
+
+		void setPwrMode(bno055_powermode_t pwrMode);
 
 		void setExtCrystalUse(bool state);
 

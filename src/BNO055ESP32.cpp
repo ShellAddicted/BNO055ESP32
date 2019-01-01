@@ -55,7 +55,7 @@ BNO055::~BNO055(){
 	//Free allocated resources
 	//set BNO055 in supension mode to reduce power consumption
 	setOprModeConfig();
-	setPwrMode(BNO055_PWR_MODE_SUSPEND);
+	setPwrModeSuspend();
 	
 	//free UART
 	uart_driver_delete(_uartPort);
@@ -423,7 +423,17 @@ void BNO055::setPwrMode(bno055_powermode_t pwrMode){
 		throw BNO055WrongOprMode("setPwrMode requires BNO055_OPERATION_MODE_CONFIG");
 	}
 	setPage(0);
-	write8(BNO055_REG_PWR_MODE, pwrMode, 0);
+	write8(BNO055_REG_PWR_MODE, pwrMode);
+}
+
+void BNO055::setPwrModeNormal(){
+	setPwrMode(BNO055_PWR_MODE_NORMAL);
+}
+void BNO055::setPwrModeLowPower(){
+	setPwrMode(BNO055_PWR_MODE_LOWPOWER);
+}
+void BNO055::setPwrModeSuspend(){
+	setPwrMode(BNO055_PWR_MODE_SUSPEND);
 }
 
 void BNO055::setExtCrystalUse(bool state){

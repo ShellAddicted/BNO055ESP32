@@ -70,6 +70,11 @@ extern "C" void app_main(){
 		bno.enableExternalCrystal();
 		//bno.setSensorOffsets(storedOffsets);
 		//bno.setAxisRemap(BNO055_REMAP_CONFIG_P1, BNO055_REMAP_SIGN_P1); // see datasheet, section 3.4
+		/* you can specify a PoWeRMode using:
+			- setPwrModeNormal(); (Default on startup)
+			- setPwrModeLowPower();
+			- setPwrModeSuspend(); (while suspended bno055 must remain in CONFIG_MODE)
+		*/
 		bno.setAccelAnyMotionInterrupt(2, 2, true, true, true); // configure the interrupt, see datasheet for more details.
 		bno.setAccelNoMotionInterrupt(0,0, true, true, true);
 		bno.enableAccelAnyMotionInterrupt(true); // you can disable it with disableAccelAnyMotionInterrupt();
