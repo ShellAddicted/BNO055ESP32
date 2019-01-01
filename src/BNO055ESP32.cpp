@@ -51,6 +51,20 @@ BNO055::BNO055(i2c_port_t i2cPort, uint8_t i2cAddr, gpio_num_t rstPin, gpio_num_
 	_intPin = intPin;
 }
 
+BNO055::~BNO055(){
+	//Free allocated resources
+	//set BNO055 in supension mode to reduce power consumption
+	setOprModeConfig();
+	setPwrMode(BNO055_PWR_MODE_SUSPEND);
+	
+	//free UART
+	uart_driver_delete(_uartPort);
+	
+	#ifndef BNO055_DEBUG_OFF
+	ESP_LOGD(BNO055_LOG_TAG, "Destroyed");
+	#endif
+}
+
 std::exception BNO055::getException(uint8_t errcode){
 	if (errcode == 0x02){
 		return BNO055ReadFail();
@@ -409,7 +423,7 @@ void BNO055::setPwrMode(bno055_powermode_t pwrMode){
 		throw BNO055WrongOprMode("setPwrMode requires BNO055_OPERATION_MODE_CONFIG");
 	}
 	setPage(0);
-	write8(BNO055_REG_PWR_MODE, pwrMode);
+	write8(BNO055_REG_PWR_MODE, pwrMode, 0);
 }
 
 void BNO055::setExtCrystalUse(bool state){
@@ -993,4 +1007,8 @@ void BNO055::begin(){
 	setPage(0, true); //forced
 	setOprMode(BNO055_OPERATION_MODE_CONFIG, true); // this should be the default OPR_MODE
 	write8(BNO055_REG_SYS_TRIGGER, 0x0);
+}
+
+void BNO055::stop(){
+	this->~BNO055();
 }

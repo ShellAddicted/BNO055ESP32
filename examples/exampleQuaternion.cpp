@@ -118,4 +118,14 @@ extern "C" void app_main(){
 		}
 		vTaskDelay(100 / portTICK_PERIOD_MS); // in fusion mode max output rate is 100hz (actual rate: 100ms (10hz))
 	}
+	/* to [forcefully] stop the communication, set BNO055 in PWR_MODE_SUSPEND, and free all the allocated resources you can use:
+
+		bno.stop(); // (if you can use something it does NOT mean you should!!!!)
+
+		in most cases (99.9%) you don't have to care about stop() just don't use it,
+		use it only when NECESSARY otherwise destructor ~BNO055() will 'autonomously' take care of everything.
+
+		DO NOT USE stop() to disable bno055 for short periods because it's inefficient,
+		see setPwrMode() and setOprMode*() functions and datasheet to do that in the right way.
+	*/
 }

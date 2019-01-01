@@ -547,8 +547,9 @@ class BNO055{
 	public:
 	BNO055(i2c_port_t i2cPort, uint8_t i2cAddr, gpio_num_t rstPin = GPIO_NUM_MAX, gpio_num_t intPin = GPIO_NUM_MAX);
 	BNO055(uart_port_t uartPort, gpio_num_t txPin = GPIO_NUM_17, gpio_num_t rxPin = GPIO_NUM_16, gpio_num_t rstPin = GPIO_NUM_MAX, gpio_num_t intPin = GPIO_NUM_MAX);
-
+	~BNO055();
 	void begin();
+	void stop();
 	void reset();
 
 	void setPage(uint8_t page, bool forced = false);
