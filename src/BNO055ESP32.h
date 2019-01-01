@@ -480,7 +480,7 @@ class BNO055WriteFail : public BNO055BaseException{
 
 class BNO055RegmapInvalidAddress : public BNO055BaseException{
 	public:
-	BNO055RegmapInvalidAddress(std::string message = "Check the register is addressable. For example in Page0, should be from 0x38 to 0x6A.") : BNO055BaseException(message){};
+	BNO055RegmapInvalidAddress(std::string message = "Check the if the register is addressable. example in Page 0, should be from 0x38 to 0x6A.") : BNO055BaseException(message){};
 };
 
 class BNO055RegmapWriteDisabled : public BNO055BaseException{
@@ -490,7 +490,7 @@ class BNO055RegmapWriteDisabled : public BNO055BaseException{
 
 class BNO055WrongStartByte : public BNO055BaseException{
 	public:
-	BNO055WrongStartByte(std::string message = "Check if the first byte send is 0xAA.") : BNO055BaseException(message){};
+	BNO055WrongStartByte(std::string message = "Check if the first byte sent is 0xAA.") : BNO055BaseException(message){};
 };
 
 class BNO055BusOverRunError : public BNO055BaseException{
@@ -500,7 +500,7 @@ class BNO055BusOverRunError : public BNO055BaseException{
 
 class BNO055MaxLengthError : public BNO055BaseException{
 	public:
-	BNO055MaxLengthError(std::string message = "Split the command, so that a single frame has less than 128 Bytes.") : BNO055BaseException(message){};
+	BNO055MaxLengthError(std::string message = "Split the command,a single frame must have < 128 Bytes.") : BNO055BaseException(message){};
 };
 
 class BNO055MinLengthError : public BNO055BaseException{
@@ -520,7 +520,7 @@ class BNO055UnknowError : public BNO055BaseException{
 
 class BNO055UartTimeout : public BNO055BaseException{
 	public:
-	BNO055UartTimeout(std::string message = "bno055 did not answer in time, if you see this often, try to increase timeoutMS.") : BNO055BaseException(message){};
+	BNO055UartTimeout(std::string message = "timeout expired, if you see this often, try to increase timeoutMS.") : BNO055BaseException(message){};
 };
 
 class BNO055UartInitFailed : public BNO055BaseException{
