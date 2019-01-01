@@ -21,8 +21,8 @@
 // SOFTWARE.
 
 /*
-	For more info: https://www.bosch-sensortec.com/bst/products/all_products/bno055
-	Information in this library refers to BST_BNO055_DS000_14 (Consulted in January 2018)
+	https://www.bosch-sensortec.com/bst/products/all_products/bno055
+	Reference Datasheet: BST_BNO055_DS000_14 (consulted in January 2018)
 */
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"

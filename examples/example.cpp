@@ -21,8 +21,8 @@
 // SOFTWARE.
 
 /*
-	For more info: https://www.bosch-sensortec.com/bst/products/all_products/bno055
-	Information in this library refers to BST_BNO055_DS000_14 (Consulted in January 2018)
+	https://www.bosch-sensortec.com/bst/products/all_products/bno055
+	Reference Datasheet: BST_BNO055_DS000_14 (consulted in January 2018)
 */
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -59,7 +59,7 @@ extern "C" void app_main(){
 	i2c_set_timeout(I2C_NUM_0, 30000);
 
 	//to use i²C leave the following line active
-    BNO055 bno((i2c_port_t)I2C_NUM_0, 0x28); // BNO055 I2C Addr can be 0x28 or 0x29 (depends on your hardware)
+	BNO055 bno((i2c_port_t)I2C_NUM_0, 0x28); // BNO055 I2C Addr can be 0x28 or 0x29 (depends on your hardware)
 	*/
 
 	//to use UART use the following line active (UART is suggested)
