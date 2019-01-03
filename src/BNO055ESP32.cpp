@@ -54,8 +54,12 @@ BNO055::BNO055(i2c_port_t i2cPort, uint8_t i2cAddr, gpio_num_t rstPin, gpio_num_
 BNO055::~BNO055(){
 	//Free allocated resources
 	//set BNO055 in supension mode to reduce power consumption
-	setOprModeConfig();
-	setPwrModeSuspend();
+	try{
+		setOprModeConfig();
+		setPwrModeSuspend();
+	}
+	catch (BNO055BaseException &exc) {}
+	catch (std::exception &exc) {}
 	
 	//free UART
 	uart_driver_delete(_uartPort);
