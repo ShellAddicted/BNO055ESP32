@@ -62,8 +62,10 @@ BNO055::~BNO055() {
     } catch (std::exception &exc) {
     }
 
-    // free UART
-    uart_driver_delete(_uartPort);
+    if (!_i2cFlag) {
+        // free UART
+        uart_driver_delete(_uartPort);
+    }
 
 #ifndef BNO055_DEBUG_OFF
     ESP_LOGD(BNO055_LOG_TAG, "Destroyed");
