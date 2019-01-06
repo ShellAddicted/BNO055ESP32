@@ -175,8 +175,8 @@ void BNO055::uart_readLen(bno055_reg_t reg, uint8_t *buffer, uint8_t len, uint32
     uint8_t cmd[4];
     cmd[0] = 0xAA;  // Start Byte
     cmd[1] = 0x01;  // Read
-    cmd[2] = reg & 0xFF;
-    cmd[3] = len & 0xFF;  // len in bytes
+    cmd[2] = reg;
+    cmd[3] = len;  // len in bytes
     uint8_t *data = NULL;
 
     if (timeoutMS > 0) {  // if we are expecting ack/response then allocate *data
@@ -251,8 +251,8 @@ void BNO055::uart_writeLen(bno055_reg_t reg, uint8_t *data2write, uint8_t len, u
     }
     cmd[0] = 0xAA;  // Start Byte
     cmd[1] = 0x00;  // Write
-    cmd[2] = reg & 0xFF;
-    cmd[3] = len & 0xFF;  // len in bytes
+    cmd[2] = reg;
+    cmd[3] = len;  // len in bytes
     memcpy(cmd + 4, data2write, len);
 
     uint8_t data[2];
