@@ -1,0 +1,41 @@
+name: CI - Build
+
+on:
+  push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install deps
+        run: |
+          sudo apt install -y git wget flex bison gperf python3 python3-pip python3-setuptools cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
+
+      - name: Prepare test_app
+        run: |
+          cd ~
+          mkdir -p test_app/components/BNO055ESP32
+          mkdir -p test_app/main/
+          echo -e "cmake_minimum_required(VERSION 3.5)\ninclude(\$ENV{IDF_PATH}/tools/cmake/project.cmake)\nproject(template-app)" > test_app/CMakeLists.txt
+          echo -e "idf_component_register(SRCS "main.cpp" INCLUDE_DIRS ".")" > test_app/main/CMakeLists.txt
+          cp -r $GITHUB_WORKSPACE test_app/components/
+          cp test_app/components/BNO055ESP32/examples/example.cpp test_app/main/main.cpp
+          
+      - name: Install esp-idf
+        run: |
+          mkdir -p ~/esp
+          cd ~/esp
+          git clone -b v4.4 --recursive https://github.com/espressif/esp-idf.git
+          cd esp-idf
+          ./install.sh esp32
+
+      - name: Build test_app
+        run: |
+          . ~/esp/esp-idf/export.sh
+          cd ~/test_app/
+          idf.py reconfigure
+          echo -e "CONFIG_COMPILER_CXX_EXCEPTIONS=y\nCONFIG_COMPILER_CXX_EXCEPTIONS_EMG_POOL_SIZE=0\nCONFIG_CXX_EXCEPTIONS=y\nCONFIG_CXX_EXCEPTIONS_EMG_POOL_SIZE=0\n" >> ./sdkconfig
+          idf.py build

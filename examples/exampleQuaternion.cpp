@@ -54,6 +54,7 @@ extern "C" void app_main() {
     conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
     conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
     conf.master.clk_speed = 100000;
+    conf.clk_flags = 0;
     i2c_param_config(I2C_NUM_0, &conf);
     i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
     i2c_set_timeout(I2C_NUM_0, 30000);

@@ -1,4 +1,1 @@
-set(COMPONENT_ADD_INCLUDEDIRS "src")
-set(COMPONENT_SRCDIRS "src")
-register_component()
-
+idf_component_register(SRCS "BNO055ESP32.cpp" INCLUDE_DIRS "include")

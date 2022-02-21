@@ -645,16 +645,14 @@ class BNO055 {
 
     std::exception getException(uint8_t errcode);
 
-    void i2c_readLen(uint8_t reg, uint8_t *buffer, uint8_t len, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
-    void i2c_writeLen(uint8_t reg, uint8_t *buffer, uint8_t len, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
+    void i2c_readLen(uint8_t reg, uint8_t *buffer, uint8_t len, uint32_t timeoutMS);
+    void i2c_writeLen(uint8_t reg, uint8_t *buffer, uint8_t len, uint32_t timeoutMS);
 
-    void uart_readLen(bno055_reg_t reg, uint8_t *buffer, uint8_t len, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
-    void uart_writeLen(bno055_reg_t reg, uint8_t *data, uint8_t len, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
-
-    void readLen(bno055_reg_t reg, uint8_t *buffer, uint8_t len, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
-    void read8(bno055_reg_t reg, uint8_t *val, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
-    void writeLen(bno055_reg_t reg, uint8_t *data, uint8_t len, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
-    void write8(bno055_reg_t reg, uint8_t val, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
+    void uart_readLen(bno055_reg_t reg, uint8_t *buffer, uint8_t len, uint32_t timeoutMS);
+    void uart_writeLen(bno055_reg_t reg, uint8_t *data, uint8_t len, uint32_t timeoutMS);
+    
+    void readLen(bno055_reg_t reg, uint8_t *buffer, uint8_t len = 1, uint8_t page = 0, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
+    void writeLen(bno055_reg_t reg, uint8_t *data, uint8_t len = 1, uint8_t page = 0, uint32_t timeoutMS = DEFAULT_UART_TIMEOUT_MS);
 
     bool interruptFlag = false;
 
@@ -697,7 +695,7 @@ class BNO055 {
     gpio_num_t _rstPin;
     gpio_num_t _intPin;
 
-    uint8_t _page;
+    uint8_t _page = 0;
 
     bool _i2cFlag;
 

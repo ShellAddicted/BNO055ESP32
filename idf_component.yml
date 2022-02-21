@@ -1,0 +1,5 @@
+version: "1.2.1"
+description: A C++ Interface for Bosch-Sensortec's BNO055 IMU
+url: https://github.com/ShellAddicted/BNO055ESP32.git
+dependencies:
+  idf: ">=4.1"
